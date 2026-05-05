@@ -1,0 +1,220 @@
+doctype html
+html
+  head
+    title Profile Dashboard
+
+    link(rel="stylesheet", href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css")
+
+    style.
+      body {
+        margin: 0;
+        font-family: Arial;
+        display: flex;
+        height: 100vh;
+      }
+
+      
+      .sidebar {
+        width: 260px;
+        background: #dcdcdc;
+        color: black;
+        padding: 20px;
+      }
+
+      .sidebar h2 {
+        margin-bottom: 15px;
+      }
+
+      .sidebar p {
+        margin: 6px 0;
+        font-size: 14px;
+      }
+
+      .sidebar a {
+        display: block;
+        margin-top: 20px;
+        padding: 10px;
+        background: purple;
+        color: white;
+        text-align: center;
+        border-radius: 6px;
+        text-decoration: none;
+      }
+
+      /* MAIN */
+      .main {
+        flex: 1;
+        padding: 20px;
+        background: #f4f6f9;
+        overflow: auto;
+      }
+
+      .card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      }
+
+      h2 {
+        margin-top: 0;
+      }
+
+      /* BUTTONS */
+      button {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .edit {
+        background: #85c3ed;
+        color: white;
+      }
+
+      .delete {
+        background: #f16555;
+        color: white;
+      }
+
+      /* FORM */
+      .form-box {
+        margin-bottom: 20px;
+      }
+
+      .form-box input, .form-box select {
+        padding: 8px;
+        margin: 5px;
+      }
+
+      .form-box button {
+        background: #27ae60;
+        color: white;
+      }
+
+      /* MODAL */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+      }
+
+      .modal-content {
+        background: white;
+        width: 400px;
+        margin: 8% auto;
+        padding: 20px;
+        border-radius: 10px;
+      }
+
+      .modal-content input {
+        width: 100%;
+        padding: 8px;
+        margin: 8px 0;
+      }
+
+      .modal-content button {
+        width: 100%;
+        padding: 10px;
+        background: #27ae60;
+        color: white;
+        font-weight: bold;
+      }
+
+  body
+
+    // SIDEBAR
+    .sidebar
+      h2 Profile
+      p Email: #{user.email}
+      p Role: #{user.role}
+      a(href="/logout") Logout
+
+    // MAIN
+    .main
+      h2 User Management
+
+      .card
+
+        // CREATE USER FORM
+        .form-box
+          h3 Add User
+
+          form(method="POST", action="/users")
+            input(type="email", name="email", placeholder="Email", required)
+            input(type="password", name="password", placeholder="Password", required)
+
+            select(name="role")
+              option(value="user") User
+              option(value="admin") Admin
+
+            button(type="submit") Create
+
+        hr
+
+        // TABLE
+        table#userTable
+          thead
+            tr
+              th ID
+              th Email
+              th Role
+              th Actions
+          tbody
+            each u in users
+              tr
+                td= u.id
+                td= u.email
+                td= u.profile.role
+                td
+                  button.edit(onclick=`openEdit(${u.id}, '${u.email}', '${u.profile.role}')`) Edit
+                  
+                  form(method="POST", action="/users/" + u.id + "?_method=DELETE", style="display:inline")
+                    button.delete(type="submit") Delete
+
+    // EDIT MODAL
+    .modal#editModal
+      .modal-content
+        h3 Edit User
+
+        form(method="POST", id="editForm")
+          input(type="hidden", name="_method", value="PUT")
+
+          label Email
+          input(type="email", name="email", id="editEmail", required)
+
+          label Role
+          input(type="text", name="role", id="editRole", required)
+
+          button(type="submit") Update
+
+    script(src="https://code.jquery.com/jquery-3.7.1.min.js")
+    script(src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js")
+
+    script.
+      $(document).ready(function () {
+        $('#userTable').DataTable();
+      });
+
+      // OPEN MODAL
+      function openEdit(id, email, role) {
+        $('#editEmail').val(email);
+        $('#editRole').val(role);
+
+        $('#editForm').attr('action', '/users/' + id + '?_method=PUT');
+
+        $('#editModal').fadeIn();
+      }
+
+      // CLOSE MODAL ON OUTSIDE CLICK
+      $(window).click(function (e) {
+        if ($(e.target).is('#editModal')) {
+          $('#editModal').fadeOut();
+        }
+      });

@@ -1,0 +1,412 @@
+doctype html
+html
+head
+title User List
+
+// DataTables CSS
+link(rel="stylesheet", href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css")
+link(rel="stylesheet", href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css")
+
+style.
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+    margin: 0;
+    padding: 20px;
+  }
+
+
+  h3 {
+    margin-bottom: 15px;
+    font-weight: 600;
+  }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .checkbox-group {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    font-size: 14px;
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .actions button {
+    background: #f0a74b;
+    border: none;
+    padding: 8px 14px;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+
+  .actions button:hover {
+    background: #e6952f;
+  }
+
+  .filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .filter select {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  .filter button {
+    background: #f0a74b;
+    border: none;
+    padding: 7px 14px;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .dataTables_wrapper {
+    font-size: 13px;
+  }
+
+  table.dataTable thead {
+    background: #f9fafb;
+  }
+
+  table.dataTable thead th {
+    padding: 10px;
+    border-bottom: 2px solid #ddd;
+    font-weight: 600;
+  }
+
+  table.dataTable tbody td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+  }
+
+  table.dataTable tbody tr:hover {
+    background-color: #f1f7ff;
+  }
+
+  /* Status badge */
+  .badge-active {
+    background: #28a745;
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .badge-inactive {
+  background: #dc3545;
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  }
+  /* Action button */
+  .btn-edit {
+    background: #e9ecef;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .btn-edit:hover {
+    background: #d6d8db;
+  }
+
+  /* DataTables buttons */
+  .dt-buttons .dt-button {
+    background: #f1f3f5 ;
+    border: 1px solid #ccc ;
+    border-radius: 4px;
+    padding: 5px 10px ;
+    font-size: 12px ;
+  }
+
+  .dt-buttons .dt-button:hover {
+    background: #e2e6ea ;
+  }
+  /* Modal background */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+  }
+
+  /* Modal box */
+  .modal-content {
+    background: #fff;
+    width: 400px;    
+    margin: 1% auto;
+    padding: 20px;
+    border-radius: 8px;
+    max-height: 80vh;
+    position: relative;
+  }
+  .modal-content form{
+    max-width: 500px; 
+    right-margin: 10px;
+    height:100hv;
+    justify-content:center;
+    align-items:center;
+  }
+  .modal-content h3{
+    marigin-top: -5px
+    marigin-bottom:-5px;
+    text-align: center;
+  }
+  .modal-content label{
+    display: block;
+    font-size: 13px;
+    margin-top: 1px;
+    text-align:left; 
+  } 
+
+  .modal-content input,.modal-content select{
+    width:90%; 
+    padding: 4px; 
+    margin-top: 5px; 
+    text-align:left;
+  }
+  .modal-content select{
+    width:94%;
+  }
+  .modal-content .actions{
+    margin-top: 15px; 
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+  }
+  /* Close button */
+  .close {
+    position: absolute;
+    right: 10px;
+    top: 5px;
+    font-size: 22px;
+    cursor: pointer;
+  }
+
+body
+
+h3 ACCOUNT USER LIST
+
+  .top-bar
+    .checkbox-group
+      label
+        input(type="checkbox", checked)
+        |  Active User
+      label
+        input(type="checkbox")
+        |  In-Active User
+
+    .actions
+      button#addnewbtn Add New User +
+
+  .filter
+    label(for="roleFilter") User Role
+    select#roleFilter(name="role") 
+      option(value=" ") Select Role
+      option(value="IT") IT
+      option(value="Overall") Overall
+    button#loadbtn(type="button") Load
+
+  table#userTable.display(style="width:100%")
+    thead
+      tr
+        th Username
+        th Code
+        th Name
+        th Role
+        th Email
+        th Mobile
+        th Branches
+        th Driver Attendance
+        th Status
+        th Action
+    tbody
+      each u in users
+        tr
+          td= u.username
+          td= u.code
+          td= u.name
+          td= u.role
+          td= u.email
+          td= u.mobile
+          td= u.branches
+          td -
+          td
+            span.badge-active= u.status
+          td
+            button.btn-edit(data-id=u.id, data-username=u.username, data-code=u.code, data-name=u.name, data-role=u.role, data-email=u.email, data-mobile=u.mobile, data-branches=u.branches, data-status=u.status) Edit
+// Modal Background
+#userModal.modal
+  .modal-content
+    span.close ×
+    h3#formTitle Add New User
+
+    form#userForm(method="POST" action="/submit")
+
+      //input(type="hidden" name="_method" value="POST" id="formMethod")
+      input(type="hidden" name="id" id="userId")
+
+      label Username
+      input(type="text" name="username" id="username" required)
+
+      label Code
+      input(type="text" name="code" id="code" pattern="[0-9]+" title="Only numbers allowed")
+
+      label Name
+      input(type="text" name="name" id="name" required)
+
+      label Role
+      select(name="role" id="role")
+        option Admin
+        option User
+        option Manager
+
+      label Email
+      input(type="email" name="email" id="email" required)
+
+      label Mobile
+      input(type="tel" name="mobile" id="mobile" pattern="[0-9]{10}" maxlength=10 title ="enter 10 digit number" required)
+
+      label Branches
+      input(type="text" name="branches" id="branches")
+
+      label Status
+      select(name="status" id="status")
+        option Active
+        option Inactive
+
+      .actions
+        button(type="submit" id="submitbtn") Submit
+        button(type="reset" id="restbtn") Reset
+
+// Scripts
+script(src="https://code.jquery.com/jquery-3.7.1.min.js")
+script(src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js")
+script(src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js")
+script(src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js")
+
+script.
+      let table;
+
+      $(document).ready(function () {
+
+        table=$('#userTable').DataTable({
+          pageLength:10,
+          dom:'Bfrtip',
+          buttons:['copy','excel'],
+          columnDefs:[
+            {orderable:false,targets:-1}
+          ]
+        });
+
+
+        // OPEN MODAL
+        $('#addnewbtn').click(function () {
+            $('#userForm')[0].reset();
+            $('#formTitle').text('Add New User');
+            $('#userId').val('');
+            $('#formMethod').val('POST');
+            $('#submitbtn').text('submit');
+            $('#userForm').attr('action', '/submit'); // back to create
+            $('#userForm').attr('method', 'POST');
+            $('#formMethod').remove();
+            $('#userModal').fadeIn();
+        });
+
+        // CLOSE MODAL (X button)
+        $('.close').click(function () {
+            $('#userModal').fadeOut();
+        });
+
+
+        // CLOSE WHEN CLICK OUTSIDE BOX
+        $(window).click(function (e) {
+            if ($(e.target).is('#userModal')) {
+            $('#userModal').fadeOut();
+            }
+        });
+
+        //- $('#userForm').submit(function(e){
+        //-   const code =$('#code').val();
+        //-   const mobile=$('#mobile').val();
+        //-   const email=$('#email').val();
+
+        //-   if(code && !/^[0-9]+$/.text(code)){
+        //-     alert("code must be numeric");
+        //-     e.preventDefault();
+        //-     return;
+        //-   }
+
+        //-   if(!/^[0-9]{10}$/.test(mobile)){
+        //-     alert("Mobile must be 10 digits");
+        //-     e.preventDefault();
+        //-     return;
+        //-   }
+
+        //-   if(email && !/^\S+@\S+\.\S+$/.test(email)){
+        //-     alert("Invalid email");
+        //-     e.preventDefault();
+        //-     return;
+        //-   }
+        //- });
+
+        // EDIT BUTTON CLICK
+        $('.btn-edit').click(function () {
+            const id = $(this).data('id');
+            const username = $(this).data('username');
+            const code = $(this).data('code');
+            const name = $(this).data('name');
+            const role = $(this).data('role');
+            const email = $(this).data('email');
+            const mobile = $(this).data('mobile');
+            const branches = $(this).data('branches');
+            const status = $(this).data('status');
+            // get user data
+            $.get('/users/' + id, function (data) {
+               
+                // fill form
+                $('#userId').val(id);
+                $('#username').val(username);
+                $('#code').val(code);
+                $('#name').val(name);
+                $('#role').val(role);
+                $('#email').val(email);
+                $('#mobile').val(mobile);
+                $('#branches').val(branches);
+                $('#status').val(status);
+
+                // change form action
+                $('#formTitle').text('Edit User'); 
+                $('#formMethod').val('PUT');
+                $('#userForm').attr('action', '/users/' + id + '?_method=PUT');
+                $('#submitbtn').text('Update User');
+                $('#userModal').fadeIn();
+            });
+        });
+      });
+
+
+
+
+

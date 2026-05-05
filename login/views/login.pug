@@ -1,0 +1,72 @@
+doctype html
+html
+  head
+    title Login
+    style.
+      body {
+        font-family: Arial;
+        height: 100vh;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #f5f5f5;
+      }
+
+      form {
+        width: 300px;
+        padding: 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      }
+
+      h1 {
+        text-align: center;
+      }
+
+      label {
+        display: block;
+        font-size: 13px;
+        margin-top: 10px;
+      }
+
+      input {
+        width: 100%;
+        padding: 6px;
+        margin-top: 5px;
+      }
+
+      button {
+        width: 100%;
+        padding: 10px;
+        margin-top: 15px;
+        border-radius: 15px;
+        background-color: purple;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+
+      p {
+        text-align: center;
+        margin-top: 10px;
+      }
+
+  body
+    form(action="/login" method="POST")
+      h1 Login
+
+      div
+        label Email:
+        input(type="email" name="email" required)
+
+      div
+        label Password:
+        input(type="password" name="password" required minlength="6")
+
+      button(type="submit") Login
+
+      p
+        | Don't have an account?
+        a(href="/register") Register here
