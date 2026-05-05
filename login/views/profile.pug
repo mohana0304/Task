@@ -41,7 +41,6 @@ html
         text-decoration: none;
       }
 
-      /* MAIN */
       .main {
         flex: 1;
         padding: 20px;
@@ -60,7 +59,6 @@ html
         margin-top: 0;
       }
 
-      /* BUTTONS */
       button {
         padding: 5px 10px;
         border: none;
@@ -78,7 +76,6 @@ html
         color: white;
       }
 
-      /* FORM */
       .form-box {
         margin-bottom: 20px;
       }
@@ -93,7 +90,6 @@ html
         color: white;
       }
 
-      /* MODAL */
       .modal {
         display: none;
         position: fixed;
@@ -129,56 +125,57 @@ html
 
   body
 
-    // SIDEBAR
     .sidebar
       h2 Profile
-      p Email: #{user.email}
-      p Role: #{user.role}
+      p Email: #{user && user.email}
+      p Role: #{user && user.role}
       a(href="/logout") Logout
 
-    // MAIN
+    
     .main
       h2 User Management
 
       .card
 
-        // CREATE USER FORM
+        
         .form-box
           h3 Add User
 
           form(method="POST", action="/users")
-            input(type="email", name="email", placeholder="Email", required)
+            input(type="email", name="email", placeholder="Email", value=formData ? formData.email : '', required)
             input(type="password", name="password", placeholder="Password", required)
 
             select(name="role")
-              option(value="user") User
-              option(value="admin") Admin
+              option(value="user",selected=formData && formData.role === 'user') User
+              option(value="admin",selected=formData && formData.role === 'admin') Admin
 
             button(type="submit") Create
 
         hr
 
-        // TABLE
+        
         table#userTable
           thead
             tr
               th ID
               th Email
               th Role
-              th Actions
+              if user.role === 'admin'
+                th Actions
           tbody
             each u in users
               tr
                 td= u.id
                 td= u.email
                 td= u.profile.role
-                td
-                  button.edit(onclick=`openEdit(${u.id}, '${u.email}', '${u.profile.role}')`) Edit
-                  
-                  form(method="POST", action="/users/" + u.id + "?_method=DELETE", style="display:inline")
-                    button.delete(type="submit") Delete
+                if user.role === 'admin'
+                  td
+                    button.edit(onclick=`openEdit(${u.id}, '${u.email}', '${u.profile.role}')`) Edit
+                    
+                    form(method="POST", action="/users/" + u.id + "?_method=DELETE", style="display:inline")
+                      button.delete(type="submit") Delete
 
-    // EDIT MODAL
+    
     .modal#editModal
       .modal-content
         h3 Edit User
@@ -192,6 +189,9 @@ html
           label Role
           input(type="text", name="role", id="editRole", required)
 
+          label Password
+          input(type="password",name="password",id="editpassword")
+
           button(type="submit") Update
 
     script(src="https://code.jquery.com/jquery-3.7.1.min.js")
@@ -202,19 +202,31 @@ html
         $('#userTable').DataTable();
       });
 
-      // OPEN MODAL
+      
       function openEdit(id, email, role) {
         $('#editEmail').val(email);
         $('#editRole').val(role);
+        $('#editPassword').val('');
 
         $('#editForm').attr('action', '/users/' + id + '?_method=PUT');
 
         $('#editModal').fadeIn();
       }
 
-      // CLOSE MODAL ON OUTSIDE CLICK
+      
       $(window).click(function (e) {
         if ($(e.target).is('#editModal')) {
           $('#editModal').fadeOut();
         }
       });
+  
+      const error = !{JSON.stringify(error || '')};
+      const success = !{JSON.stringify(success || '')};
+
+      if (error) {
+        alert(error);
+      }
+
+      if (success) {
+        alert(success);
+      }

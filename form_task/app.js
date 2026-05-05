@@ -27,7 +27,6 @@ app.get('/',async(req,res)=>{
 
 app.post("/submit", async (req, res) => {
   try {
-    console.log("=== POST REQUEST RECEIVED ===");
     console.log("Request body:", req.body);
     console.log("Request headers:", req.headers['content-type']);
     

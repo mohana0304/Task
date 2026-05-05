@@ -6,17 +6,17 @@ exports.auth= (roles = [])=>{
     return (req,res,next)=>{
         const token = req.cookies.token;
 
-        if(!token) return res.send('No token');
+        if(!token) return res.redirect('/?error=Please login');
         try{
             const decoded= jwt.verify(token,'secretkey');
 
             if(roles.length && !roles.includes(decoded.role)){
-                return res.send('Access denied');
+                return res.redirect('/profile?error=Access denied');
             }
             req.user=decoded;
             next();
         }catch{
-            res.send('Invalid token');
+            return res.redirect('/?error=Invalid token');
         }
     };
 };

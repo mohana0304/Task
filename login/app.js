@@ -24,7 +24,10 @@ app.set('view engine', 'pug');
 app.use('/', authRoutes);
 app.use('/', userRoutes);
 app.get('/', (req, res) => {
-  res.render('login');
+  res.render('login',{
+    error:req.query.error,
+    success: req.query.success
+  });
 });
 app.get('/register',(req,res)=>{
   res.render('register');
