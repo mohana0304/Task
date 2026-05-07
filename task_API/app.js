@@ -1,6 +1,6 @@
 const express = require('express');
-const sequelize=require('./db');
-const User=require('./User');
+const sequelize=require('./config/db');
+const User=require('./models/User');
 const { USE } = require('sequelize/lib/index-hints');
 
 const app =express();

@@ -1,0 +1,242 @@
+extends layout
+
+block head
+	include ./shared/head.jade
+	link(rel="stylesheet" href="/js/lib/smooth-zoom/smooth-zoom.css")
+	link(href='/js/lib/viewerjs/viewer.min.css', rel='stylesheet')
+	style.
+		.text-end {
+			text-align: end !important;
+		}
+
+		.text-end input {
+			text-align: end !important;
+		}
+
+		table th, table td {
+			padding: 1rem;
+			vertical-align: middle;
+		}
+
+		#invoiceCreateModal .radio-inline input {
+			opacity: 1;
+		}
+
+		#invoiceCreateModal .form-horizontal .control-label {
+			text-align: start;
+		}
+
+
+		#invoiceCreateModal .footer-data-container {
+			display: flex;
+			align-items: center;
+			gap: 1rem;
+		}
+
+		.footer-data-container span:last-child {
+			font-size: 150%;
+			font-weight: 600;
+			text-align: start !important;
+		}
+
+block content
+	section#container
+		include ./shared/nav-head.jade
+
+		include ./shared/sidebar.jade
+
+		// main content start
+		+InvoiceCreateModal
+		+InvoiceViewModal
+		section#main-content.merge-left
+			section.wrapper
+				// page start
+				.row
+					.col-lg-12
+						section.panel
+							header.panel-heading
+								| Purchase Orders
+								.btn-group.pull-right(style='margin:-8px 0 0;')
+									button#addNew.btn.btn-primary(href='#addPoModal' data-toggle='modal')
+										| Add New &nbsp;
+										i.fa.fa-plus
+							.panel-body
+								include ./shared/po-add.jade
+								include ./shared/po-details-view.jade
+								include ./shared/images-modal.jade
+								include ./shared/po-approve.jade
+								include ./shared/po-verify.jade
+								include ./shared/po-cancel.jade
+								include ./shared/po-receive.jade
+								.row
+									.col-md-2
+										.row
+											label.col-md-12 Branch&nbsp;
+											.col-md-12
+												select#branch-filter.form-control(name='branch')
+													option(value="" selected="selected") Select Branch
+									.col-md-2
+										.row
+											label.col-md-12 Vendor&nbsp;
+											.col-md-12
+												select#vendor-filter.form-control(name='location')
+													option(value="" selected="selected") Select Vendor 
+									.col-md-2
+										.row
+											label.col-md-12 Status&nbsp;
+											.col-md-12
+												select#status-filter.form-control(name='vehicleModel')
+													option(value="" selected="selected") Select Status
+									.col-md-2 
+										.row
+											label.col-md-12 From&nbsp;
+											.col-md-12
+												input.form-control(type="text" id="sdate" autocomplete="off",required)
+									.col-md-2 
+										.row
+											label.col-md-12 To&nbsp;
+											.col-md-12
+												input.form-control(type="text" id="edate" autocomplete="off",required) 
+									.col-md-2
+										.row(style="padding-top: 20px")
+											.col-md-12
+												button.btn.btn-primary(type="button" id="loadFilter")
+													| Load
+								hr
+								.adv-table
+									table#poInfoTable.display.table.table-bordered(cellpadding='0' cellspacing='0' border='0' style="width:100%")
+										thead
+											tr
+												th PO Number
+												th Job Card No
+												th GRN No(s)
+												th PO Date
+												th Order Cost
+												th Order Cost GST
+												th Branch
+												th Vendor
+												th Status
+												th Created By
+												th Verified By
+												th Approved By
+												th Cancelled By
+												th Note
+												th
+										tbody
+block foot
+	include ./shared/foot.jade
+	script(src='/js/ktlib/shared/utilities.js')
+	script(src='/js/lib/pdfmake_vfs_fonts.js')
+	script(src='/js/lib/smooth-zoom/smooth-zoom.min.js')
+	script(src="/js/lib/debounce/debounce.js")
+	script(src='/js/ktlib/purchase-orders.js')
+	script(src="/js/ktlib/po-invoices.js")
+	script(src='/js/ktlib/shared/images-modal.js')
+	script(src='/js/lib/viewerjs/viewer.min.js')
+	script(src='/js/lib/jquery-viewer.min.js')
+
+
+mixin InvoiceCreateModal 
+	#invoiceCreateModal.modal.fade(tabindex="-1")
+		.modal-dialog.modal-lg(style="min-width: 90vw;")
+			.modal-content 
+				.modal-header 
+					button.close(type="button" data-dismiss="modal") ×
+					h4.modal-title Purchase Order Invoices 
+				.modal-body.container-fluid 
+					form#poInvoiceForm.form-horizontal.cmxform
+						.form-group 
+							label.control-label.col-sm-2 Invoice Number *
+							.col-sm-4 
+								input#poInvoiceNumber.form-control(type="text" required name="invoiceNumber")
+						.form-group 
+							label.control-label.col-sm-2 Invoice Date *
+							.col-sm-4
+								input#poInvoiceDate.form-control(required name="invoiceDate")
+						.form-group 
+							label.control-label.col-sm-2 Invoice Type *
+							.col-sm-4
+								div#invoiceTypeContainer(style="display: flex; align-items: center; gap: 2rem")
+									label.radio-inline
+										input#invTypeGST(type="radio" name="invoiceType" value="0" checked required)
+										span GST
+									label.radio-inline
+										input#invTypeNonGST(type="radio" name="invoiceType" value="1" required)
+										span Non GST 
+						.form-group
+							label.control-label.col-sm-2 Files (Max 3) *
+							.col-sm-4
+								input#poInvoiceFiles.form-control(type="file" accept="image/*, .pdf" multiple required name="files")
+					hr
+					.table-responsive(style="overflow: auto; max-height: 40vh") 
+						table#invoiceTable.table.table-bordered.table-striped(style="width: 100%; table-layout: fixed")
+							thead(style="white-space: nowrap;")
+								tr 
+									th(style="width: 4rem") #
+									th(style="width: 16rem") Item
+									th.text-end(style="width: 12rem;") Ord.Qty
+									th.text-end(style="width: 12rem;") Ord.Cost
+									th.text-end.gst-th(style="width: 12.5rem;") Ord.Taxless Total
+									th.text-end.gst-th(style="width: 12rem;") Ord.SGST %
+									th.text-end.gst-th(style="width: 12rem;") Ord.SGST ₹
+									th.text-end.gst-th(style="width: 12rem;") Ord.CGST %
+									th.text-end.gst-th(style="width: 12rem;") Ord.CGST ₹
+									th.text-end.gst-th(style="width: 12rem;") Ord.Total.GST ₹
+									th.text-end(style="width: 12rem;") Discount %
+									th.text-end(style="width: 12rem;") Discount.Cost
+									th.text-end.gst-th(style="width: 12rem;") Ord.GST Total
+									th.text-end(style="width: 12rem;") Ord.Net Total								
+									th.text-end(style="width: 12rem;") Inv.Qty
+									th.text-end(style="width: 12rem;") Inv.Cost
+									th.text-end.gst-th(style="width: 12.5rem;") Inv.Taxless Total
+									th.text-end.gst-th(style="width: 12rem;") Inv.SGST %
+									th.text-end.gst-th(style="width: 12rem;") Inv.SGST ₹
+									th.text-end.gst-th(style="width: 12rem;") Inv.CGST %
+									th.text-end.gst-th(style="width: 12rem;") Inv.CGST ₹
+									th.text-end.gst-th(style="width: 12rem;") Inv.Total.GST ₹									
+									th.text-end.gst-th(style="width: 12rem;") Inv.GST Total
+									th.text-end(style="width: 12rem;") Inv.Net Total								
+							tbody 
+
+				.modal-footer 
+					div(style="display: flex; align-items: center; justify-content: space-between;")
+						div(style="display: flex; align-items: center; gap: 2rem;")
+							.footer-data-container 
+								span Invoiced Taxless Total
+								span#footerInvTotal
+							.footer-data-container.gst-ele
+								span Invoiced GST Total
+								span#footerInvGSTTotal
+							.footer-data-container
+								span Invoiced Discount Total
+								span#footerInvDiscountTotal
+							.footer-data-container 
+								span Invoiced Net Total
+								span#footerInvNetTotal
+						button#saveInvoiceBtn.btn.btn-primary(type="submit" form="poInvoiceForm") Save 
+
+
+
+mixin InvoiceViewModal 
+	#invoiceViewModal.modal.fade(tabindex="-1")
+		.modal-dialog.modal-lg(style="min-width: 75vw;")
+			.modal-content 
+				.modal-header 
+					button.close(type="button" data-dismiss="modal") ×
+					h4.modal-title PO Invoices 
+				.modal-body.container-fluid
+					form#invoiceViewFilterForm.cmxform(style="display: none")
+						.row 
+							.col-md-3
+								.form-group
+									label(for="filterByInvoiceNumber") Invoice Number
+									input#filterByInvoiceNumber.form-control(type="text" name="invoiceNumber")
+							.col-md-2
+								.form-group
+									label(for="filterByDateStart") Invoice Date Start
+									input#filterByDateStart.form-control(type="text" name="invoiceDateStart")
+							.col-md-2
+								.form-group
+									label(for="filterByDateEnd") Invoice Date End
+									input#filterByDateEnd.form-control(type="text" name="invoiceDateEnd")
+					#viewContainer

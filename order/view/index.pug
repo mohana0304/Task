@@ -23,7 +23,7 @@ style.
 
   .top-bar {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     margin-bottom: 15px;
   }
@@ -212,53 +212,13 @@ style.
   }
 body
 
-h3 ACCOUNT USER LIST
+h3 ORDER LIST 
 
   .top-bar
-    .checkbox-group
-      label
-        input(type="checkbox", checked)
-        |  Active User
-      label
-        input(type="checkbox")
-        |  In-Active User
-
     .actions
       button#addnewItem Add New Order +
-      button#addnewbtn Add New User +
 
   
-  table#userTable.display(style="width:100%")
-    thead
-      tr
-        th Username
-        th Code
-        th Name
-        th Role
-        th Email
-        th Mobile
-        th Branches
-        th Driver Attendance
-        th Status
-        th Action
-    tbody
-      each u in users
-        tr
-          td= u.username
-          td= u.code
-          td= u.name
-          td= u.role
-          td= u.email
-          td= u.mobile
-          td= u.branches
-          td -
-          td
-            span.badge-active= u.status
-          td
-            button.btn-edit(data-id=u.id, data-username=u.username, data-code=u.code, data-name=u.name, data-role=u.role, data-email=u.email, data-mobile=u.mobile, data-branches=u.branches, data-status=u.status) Edit
-  br
-  h3 ORDER LIST 
-
   table#orderTable.display(style="width:100%")
     thead 
       tr 
@@ -314,54 +274,11 @@ h3 ACCOUNT USER LIST
           td= o.invGSTTotal
           td= o.invNetTotal
 
-// Modal Background
-#userModal.modal
-  .modal-content
-    span.close ×
-    h3#formTitle Add New User
-
-    form#userForm(method="POST" action="/submit")
-
-      //input(type="hidden" name="_method" value="POST" id="formMethod")
-      input(type="hidden" name="id" id="userId")
-
-      label Username
-      input(type="text" name="username" id="username" required)
-
-      label Code
-      input(type="text" name="code" id="code" pattern="[0-9]+" title="Only numbers allowed")
-
-      label Name
-      input(type="text" name="name" id="name" required)
-
-      label Role
-      select(name="role" id="role")
-        option Admin
-        option User
-        option Manager
-
-      label Email
-      input(type="email" name="email" id="email" required)
-
-      label Mobile
-      input(type="tel" name="mobile" id="mobile" pattern="[0-9]{10}" maxlength=10 title ="enter 10 digit number" required)
-
-      label Branches
-      input(type="text" name="branches" id="branches")
-
-      label Status
-      select(name="status" id="status")
-        option Active
-        option Inactive
-
-      .actions
-        button(type="submit" id="submitbtn") Submit
-        button(type="reset" id="restbtn") Reset
 
 // ORDER MODAL
 #orderModal.modal
   .modal-content(style="max-height:90vh; overflow-y:auto;")
-    span.close-order ×
+    span.close ×
 
     h3#orderFormTitle Add New Order
 
@@ -407,9 +324,6 @@ h3 ACCOUNT USER LIST
 
       label Ord.Net Total
       input(type="number" step="0.01" name="ordNetTotal" id="ordNetTotal")
-
-      br
-      
 
       label Inv.Qty
       input(type="number" step="0.01" name="invQty" id="invQty")
@@ -458,4 +372,3 @@ script(src="/main.js")
 script.
   const error = !{JSON.stringify(error || '')};
   const success = !{JSON.stringify(success || '')};
-  
