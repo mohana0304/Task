@@ -18,6 +18,15 @@ const User=sequelize.define('User1',{
         type: DataTypes.STRING,
         allowNull:false
     },
+    otp: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+
+    otpExpires: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
     profile:{
         type: DataTypes.JSONB,
         defaultValue:{

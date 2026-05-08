@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const sequelize = require('./config/database');
 const authRoutes = require('./routes/auth');
@@ -29,11 +30,17 @@ app.get('/', (req, res) => {
     success: req.query.success
   });
 });
+app.get('/login', (req, res) => {
+  res.render('login', {
+    error: req.query.error,
+    success: req.query.success
+  });
+});
 app.get('/register',(req,res)=>{
   res.render('register');
 });
 async function start() {
-  await sequelize.sync();
+  await sequelize.sync({alter:true});
   const hash = await bcrypt.hash('123456', 10);
 
   await User.findOrCreate({
@@ -43,6 +50,10 @@ async function start() {
       profile: { role: 'admin' }
     }
   });
+
+app.get('/forgot-password', (req, res) => {
+  res.render('forgot-password');
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

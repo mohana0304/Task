@@ -1,7 +1,7 @@
 doctype html
 html
   head
-    title Login
+    title Verify OTP
     style.
       body {
         font-family: Arial;
@@ -53,32 +53,19 @@ html
         margin-top: 10px;
       }
 
+
   body
-    form(action="/login" method="POST")
-      h1 Login
+    form(action="/verify-otp" method="POST")
+      h2 Verify OTP
+
+      input(type="hidden" name="email" value=email)
 
       div
-        label Email:
-        input(type="email" name="email" required)
+        label OTP
+        input(type="text" name="otp" required)
 
       div
-        label Password:
+        label New Password
         input(type="password" name="password" required minlength="6")
 
-      button(type="submit") Login
-
-      p
-        | Don't have an account?
-        a(href="/register") Register here
-      p  
-        a(href="/forgot-password") Forgot Password?
-  script. 
-    const error ="#{error || ''}";
-    const success = "#{success || ''}";
-
-    if(error){
-      alert(error);
-    }
-    if(success){
-      alert(success);
-    }
+      button(type="submit") Reset Password

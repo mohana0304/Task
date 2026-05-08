@@ -17,6 +17,8 @@
     "express-validator": "^7.3.2",
     "jsonwebtoken": "^9.0.3",
     "method-override": "^3.0.0",
+    "nodemailer": "^8.0.7",
+    "otp-generator": "^4.0.1",
     "pg": "^8.20.0",
     "pg-hstore": "^2.3.4",
     "pug": "^3.0.4",

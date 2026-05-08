@@ -26,7 +26,6 @@ block head
 			text-align: start;
 		}
 
-
 		#invoiceCreateModal .footer-data-container {
 			display: flex;
 			align-items: center;
@@ -112,7 +111,7 @@ block content
 												th GRN No(s)
 												th PO Date
 												th Order Cost
-												th Order Cost GST
+												th Net Total
 												th Branch
 												th Vendor
 												th Status
@@ -174,28 +173,26 @@ mixin InvoiceCreateModal
 								tr 
 									th(style="width: 4rem") #
 									th(style="width: 16rem") Item
-									th.text-end(style="width: 12rem;") Ord.Qty
-									th.text-end(style="width: 12rem;") Ord.Cost
-									th.text-end.gst-th(style="width: 12.5rem;") Ord.Taxless Total
-									th.text-end.gst-th(style="width: 12rem;") Ord.SGST %
+									th.text-end(style="width: 10rem;") Ord.Qty
+									th.text-end(style="width: 10rem;") Ord.Cost
+									th.text-end.gst-th(style="width: 12rem;") Ord.Taxless
+									th.text-end.gst-th(style="width: 10rem;") Ord.SGST %
 									th.text-end.gst-th(style="width: 12rem;") Ord.SGST ₹
-									th.text-end.gst-th(style="width: 12rem;") Ord.CGST %
+									th.text-end.gst-th(style="width: 10rem;") Ord.CGST %
 									th.text-end.gst-th(style="width: 12rem;") Ord.CGST ₹
-									th.text-end.gst-th(style="width: 12rem;") Ord.Total.GST ₹
-									th.text-end(style="width: 12rem;") Discount %
-									th.text-end(style="width: 12rem;") Discount.Cost
-									th.text-end.gst-th(style="width: 12rem;") Ord.GST Total
-									th.text-end(style="width: 12rem;") Ord.Net Total								
-									th.text-end(style="width: 12rem;") Inv.Qty
-									th.text-end(style="width: 12rem;") Inv.Cost
-									th.text-end.gst-th(style="width: 12.5rem;") Inv.Taxless Total
-									th.text-end.gst-th(style="width: 12rem;") Inv.SGST %
+									th.text-end.gst-th(style="width: 12rem;") Ord.Total GST
+									th.text-end(style="width: 10rem;") Discount %
+									th.text-end(style="width: 12rem;") Discount ₹
+									th.text-end(style="width: 14rem;") Ord.Net Total
+									th.text-end(style="width: 10rem;") Inv.Qty
+									th.text-end(style="width: 10rem;") Inv.Cost
+									th.text-end.gst-th(style="width: 12rem;") Inv.Taxless
+									th.text-end.gst-th(style="width: 10rem;") Inv.SGST %
 									th.text-end.gst-th(style="width: 12rem;") Inv.SGST ₹
-									th.text-end.gst-th(style="width: 12rem;") Inv.CGST %
+									th.text-end.gst-th(style="width: 10rem;") Inv.CGST %
 									th.text-end.gst-th(style="width: 12rem;") Inv.CGST ₹
-									th.text-end.gst-th(style="width: 12rem;") Inv.Total.GST ₹									
-									th.text-end.gst-th(style="width: 12rem;") Inv.GST Total
-									th.text-end(style="width: 12rem;") Inv.Net Total								
+									th.text-end.gst-th(style="width: 12rem;") Inv.Total GST
+									th.text-end(style="width: 14rem;") Inv.Net Total							
 							tbody 
 
 				.modal-footer 
@@ -214,7 +211,6 @@ mixin InvoiceCreateModal
 								span Invoiced Net Total
 								span#footerInvNetTotal
 						button#saveInvoiceBtn.btn.btn-primary(type="submit" form="poInvoiceForm") Save 
-
 
 
 mixin InvoiceViewModal 

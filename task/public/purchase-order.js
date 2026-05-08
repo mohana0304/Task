@@ -17,9 +17,10 @@ jQuery(document).ready(function () {
 		$("#poDetailsEntryTable").find("tr:gt(0)").remove();
 		$('.branch-select2, .vendor-select2, .part-select2, .vehicleModel-select2, .po-location-select2').val(null).trigger('change.select2');
 		$('#poEntryForm').trigger('reset');
-		$('#orderedQty, #orderedCost, #orderedCostGst, #grandTotal').text('0');
+		$('#orderedQty, #orderedCost, #orderedGST, #grandTotal').text('0');
 		$('#addPoModal .poHeaderId').val('new');
 	});
+
 	$('#addPoModal').on('shown.bs.modal', function () {
 		$("#poEntryForm #poDate").datetimepicker({
 			format: "DD/MM/YYYY hh:mm A",
@@ -86,7 +87,7 @@ jQuery(document).ready(function () {
 			const vendors = response.results.map(function (obj) {
 				var rObj = {};
 				rObj.id = obj.id;
-				rObj.text = obj.name
+				rObj.text = obj.name;
 				return rObj;
 			});
 			$(".vendor-select2,#vendor-filter").select2({
@@ -113,7 +114,7 @@ jQuery(document).ready(function () {
 			parts = response.results.map(function (obj) {
 				var rObj = {};
 				rObj.id = obj.id;
-				rObj.text = obj.name
+				rObj.text = obj.name;
 				return rObj;
 			});
 			$(".part-select2").select2({
@@ -139,7 +140,7 @@ jQuery(document).ready(function () {
 			let statusList = response.results.status.map(function (obj) {
 				var rObj = {};
 				rObj.id = obj.id;
-				rObj.text = obj.text
+				rObj.text = obj.text;
 				return rObj;
 			});
 			$("#status-filter").select2({
@@ -210,7 +211,7 @@ jQuery(document).ready(function () {
 		headers: { "X-AT-SessionToken": localStorage.getItem("sessionToken") },
 	}).done(response => {
 		if (!response.success) {
-			return alert("Error while fetching vehicle service types!")
+			return alert("Error while fetching vehicle service types!");
 		}
 		scope.vehicleServiceTypes = response.results.map((st) => ({ id: st.id, text: `${st.componentName} - ${st.serviceName}` }));
 	});
@@ -286,7 +287,6 @@ jQuery(document).ready(function () {
 				$('#cost').val(poHeader.orderedCost);
 				$('.billTo').val(billTo);
 				$('.shipTo').val(shipTo);
-				$('#poEntryForm .orderedCostGst').val(poHeader.orderedCostGst);
 				$('.poNote').val(poHeader.note);
 				populateLocationSelection(poHeader.BranchId, poHeader.LocationId);
 				$.ajax({
@@ -297,39 +297,45 @@ jQuery(document).ready(function () {
 					if (response.success === true) {
 						var poDetails = response.results;
 						if (poDetails && Object.keys(poDetails).length > 0) {
+							$('#poDetailsEntryTable tbody').html('');
 							let tds = '', counter = 1;
 							poDetails.forEach(poDetail => {
 								var partDetails = poDetail.Part ? (poDetail.Part.PartDetails ? poDetail.Part.PartDetails : []) : [];
-								var stockDetails = {
-									minQty: 0,
-									maxQty: 0,
-									minOrderQty: 0
-								};
-								let partDetail = partDetails.find(x => x.PartId == poDetail.PartId && x.BranchId == poHeader.BranchId && x.VehicleModelId == (poDetail.VehicleModelId ? poDetail.VehicleModelId : null));
+								var stockDetails = { minQty: 0, maxQty: 0, minOrderQty: 0 };
+								let partDetail = partDetails.find(x =>
+									x.PartId == poDetail.PartId &&
+									x.BranchId == poHeader.BranchId &&
+									x.VehicleModelId == (poDetail.VehicleModelId ? poDetail.VehicleModelId : null)
+								);
 								if (partDetail) {
-									stockDetails['minQty'] = partDetail ? (partDetail.minQty ? partDetail.minQty : 0) : 0;
-									stockDetails['maxQty'] = partDetail ? (partDetail.maxQty ? partDetail.maxQty : 0) : 0;
-									stockDetails['minOrderQty'] = partDetail ? (partDetail.minOrderQty ? partDetail.minOrderQty : 0) : 0;
+									stockDetails['minQty'] = partDetail.minQty || 0;
+									stockDetails['maxQty'] = partDetail.maxQty || 0;
+									stockDetails['minOrderQty'] = partDetail.minOrderQty || 0;
 								}
 								var unitCost = Number(Number(poDetail.orderedCost) / parseInt(poDetail.orderedQty)).toFixed(2);
-								var unitCostGst = Number(Number(poDetail.orderedCostGst) / parseInt(poDetail.orderedQty)).toFixed(2);
 								tds = getTableCellInput("part", "select", false);
-								tds += getTableCellInput("vehicleServiceType", "select", false); 
+								tds += getTableCellInput("vehicleServiceType", "select", false);
 								tds += getTableCellInput('vehicleModel', 'select', false);
 								tds += getTableCellLabel(`Min Order Qty : ${stockDetails.minOrderQty}</br> Min/Max Qty : ${stockDetails.minQty} / ${stockDetails.maxQty}</br> Avail Qty : `, 12);
 								tds += getTableCellInput('orderQty', 'number', true);
 								tds += getTableCellInput('unitCost', 'number', true);
-								tds += getTableCellInput('unitCostGst', 'number', false);
-								tds += getTableCellInput('GSTPercentage', 'number', false);
-								tds += getTableCellInput('unitTotalCost', 'number', 'readonly');
+								tds += getTableCellInput('taxlessTotal', 'number', 'readonly');
+								tds += getTableCellInput('SGSTPercentage', 'number');
+								tds += getTableCellInput('SGSTCost', 'number', 'readonly');
+								tds += getTableCellInput('CGSTPercentage', 'number');
+								tds += getTableCellInput('CGSTCost', 'number', 'readonly');
+								tds += getTableCellInput('GST', 'number', 'readonly');
+								tds += getTableCellInput('DiscountPercentage', 'number');
+								tds += getTableCellInput('DiscountCost', 'number', 'readonly');
+								tds += getTableCellInput('NetTotal', 'number', 'readonly');
 								tds += counter > 1 ? '<td class="align-center"><a class="dynamicDelete"><img src="images/dashboard/close-icon.svg" width="25"/></a></td>' : '<td></td>';
 								$('#poDetailsEntryTable tbody').append('<tr>' + tds + '</tr>');
 								initLastPOItemSelectors(poDetail.PartId, poDetail.VehicleModelId, null, poDetail.VehicleServiceTypeId);
-								setTableCellInputValue('#poDetailsEntryTable .orderQty:last', poDetail.orderedQty)
-								setTableCellInputValue('#poDetailsEntryTable .unitCost:last', unitCost)
-								setTableCellInputValue('#poDetailsEntryTable .unitCostGst:last', unitCostGst)
-								setTableCellInputValue('#poDetailsEntryTable .GSTPercentage:last', Math.round((unitCostGst / unitCost) * 100))
-								setTableCellInputValue('#poDetailsEntryTable .unitTotalCost:last', (unitCost + unitCostGst))
+								setTableCellInputValue('#poDetailsEntryTable .orderQty:last', poDetail.orderedQty);
+								setTableCellInputValue('#poDetailsEntryTable .unitCost:last', unitCost);
+								setTableCellInputValue('#poDetailsEntryTable .SGSTPercentage:last', poDetail.SGSTPercentage || poDetail.Part && poDetail.Part.sgst || 0);
+								setTableCellInputValue('#poDetailsEntryTable .CGSTPercentage:last', poDetail.CGSTPercentage || poDetail.Part && poDetail.Part.cgst || 0);
+								setTableCellInputValue('#poDetailsEntryTable .DiscountPercentage:last', poDetail.discountPercentage || 0);
 								counter++;
 							});
 							computeTotalOrderCost();
@@ -344,6 +350,7 @@ jQuery(document).ready(function () {
 			$('#addPoModal').modal('show');
 		});
 	});
+
 	$('#poInfoTable').on('click', '.view-details', function (e) {
 		var id = $(this).data('id');
 		$.ajax({
@@ -381,19 +388,11 @@ jQuery(document).ready(function () {
 				stripeClasses: [],
 				order: [[0, 'asc']],
 				columnDefs: [
-					{
-						defaultContent: '',
-						targets: '_all'
-					},
-					{
-						visible: false,
-						targets: [12, 13, 14]
-					}
+					{ defaultContent: '', targets: '_all' },
+					{ visible: false, targets: [12, 13, 14] }
 				],
 				columns: [
-					{
-						data: 'lineNo',
-					},
+					{ data: 'lineNo' },
 					{
 						data: 'Part',
 						render: function (data, type, full, meta) {
@@ -413,56 +412,29 @@ jQuery(document).ready(function () {
 							return vehicleModelBrandName ? vehicleModelBrandName : '-';
 						}
 					},
+					{ data: 'orderedQty', class: 'align-right' },
+					{ data: 'orderedCost', class: 'align-right' },
+					// orderedGST = SGST amount + CGST amount (total GST saved on the detail row)
+					{ data: 'orderedGST', class: 'align-right', defaultContent: '0' },
 					{
-						data: 'orderedQty',
-						class: 'align-right'
-					},
-					{
-						data: 'orderedCost',
-						class: 'align-right'
-					},
-					{
-						data: 'orderedCostGst',
-						class: 'align-right'
-					},
-					{
-						data: 'orderedCostGst',
+						// GST % column: orderedGST / orderedCost * 100
+						data: 'orderedGST',
 						class: 'align-right',
 						defaultContent: 0,
 						render: function (data, type, full, meta) {
 							let orderedCost = Number(full.orderedCost);
-							let orderedCostGst = Number(full.orderedCostGst);
-							let percentage = (orderedCostGst && orderedCost) ? (orderedCostGst / orderedCost) * 100 : 0;
-							return  Math.round(percentage) + '%';
+							let orderedGST = Number(full.orderedGST || full.orderedCostGst || 0);
+							let percentage = (orderedGST && orderedCost) ? (orderedGST / orderedCost) * 100 : 0;
+							return Math.round(percentage) + '%';
 						}
 					},
-					{
-						data: 'receivedQty',
-						class: 'align-right'
-					},
-					{
-						data: 'invoicedQty',
-						class: 'align-right'
-					},
-					{
-						data: 'invoicedCost',
-						class: 'align-right'
-					},
-					{
-						data: 'paidQty',
-						class: 'align-right'
-					},
-					{
-						data: 'paidCost',
-						class: 'align-right'
-					},
-					{
-						data: 'poNumber',
-						class: 'align-right'
-					},
-					{
-						data: 'branch'
-					},
+					{ data: 'receivedQty', class: 'align-right' },
+					{ data: 'invoicedQty', class: 'align-right' },
+					{ data: 'invoicedCost', class: 'align-right' },
+					{ data: 'paidQty', class: 'align-right' },
+					{ data: 'paidCost', class: 'align-right' },
+					{ data: 'poNumber', class: 'align-right' },
+					{ data: 'branch' },
 					{
 						data: null,
 						render: function (data, type, full, meta) {
@@ -476,47 +448,54 @@ jQuery(document).ready(function () {
 		$('#viewPoDetailModal').modal('show');
 		$("#print-grn").attr('data-id', id);
 		const accountConfig = localStorage.getItem('config') ? JSON.parse(localStorage.getItem('config')) : null;
-		if(accountConfig && accountConfig.invConfig && accountConfig.invConfig.poPdf && accountConfig.invConfig.poPdf.rcvdDetails){
+		if (accountConfig && accountConfig.invConfig && accountConfig.invConfig.poPdf && accountConfig.invConfig.poPdf.rcvdDetails) {
 			$("#print-grn").show();
 		}
 	});
 
-	//#region  functionality to print purchase order details
-	$("#print-grn").on("click", function(event) {
+	//#region functionality to print purchase order details
+	$("#print-grn").on("click", function (event) {
 		const id = $(this).attr('data-id');
 		$.ajax({
 			type: 'GET',
 			url: path + '/api/po/detailedPdf/' + id,
 			headers: { 'X-AT-SessionToken': localStorage.sessionToken }
 		}).done(function (response) {
-			if(response.result && response.result.success){
-				try{
+			if (response.result && response.result.success) {
+				try {
 					const fileUrl = `${window.path}${response.result.destUrl}`;
-					const fileName = "purchase_order_details"
+					const fileName = "purchase_order_details";
 					const anchor = document.createElement("a");
 					anchor.href = fileUrl;
 					anchor.target = "_blank";
 					anchor.download = fileName;
 					document.body.appendChild(anchor);
 					anchor.click();
-					document.body.removeChild(anchor);																			
-				}catch(error){
+					document.body.removeChild(anchor);
+				} catch (error) {
 					console.log("PDF downloading failed ", error);
 				}
-			}else{
+			} else {
 				alert("PDF downloading failed");
 				console.log("PDF downloading failed ", response.result.error);
-			}			
-		})		
+			}
+		});
 	});
 	//#endregion
 
 	function setPoHeaders(jsonData) {
 		$('.totalQtyToReceive').text(jsonData['orderedQty'] - jsonData['receivedQty']);
-		$('.grandTotal').text(Number(jsonData['orderedCost']) + Number(jsonData['orderedCostGst']));
+		$('.grandTotal').text(Number(jsonData['orderedCost']) + Number(jsonData['orderedGST'] || jsonData['orderedCostGst'] || 0));
 		$('.poRemarks').text(jsonData['note'] ? jsonData['note'] : '');
 		const poHeader = $('.po-header');
-		const namesArray = ['poNumber', 'poStatus', { type: 'date', data: 'orderDate' }, 'poReceivedByUser', 'poReceivedByDate', ['Branch', 'name'], ['Vendor', 'name'], ['PoHeaderCreatedBy', 'username'], ['PoHeaderApprovedBy', 'username'], ['PoHeaderVerifiedBy', 'username'], 'orderedCost', 'orderedCostGst', 'orderedQty', 'receivedQty', ['JobCard', 'jobCardNo']]
+		const namesArray = [
+			'poNumber', 'poStatus', { type: 'date', data: 'orderDate' },
+			'poReceivedByUser', 'poReceivedByDate',
+			['Branch', 'name'], ['Vendor', 'name'],
+			['PoHeaderCreatedBy', 'username'], ['PoHeaderApprovedBy', 'username'],
+			['PoHeaderVerifiedBy', 'username'],
+			'orderedCost', 'orderedGST', 'orderedQty', 'receivedQty', ['JobCard', 'jobCardNo']
+		];
 		namesArray.forEach(name => {
 			let className, text = '';
 			if (Array.isArray(name)) {
@@ -524,7 +503,7 @@ jQuery(document).ready(function () {
 				className = model + '-' + attribute;
 				text = jsonData[model] ? jsonData[model][attribute] : '-';
 			} else if (typeof (name) === 'object') {
-				className = name.data
+				className = name.data;
 				const string = jsonData[className];
 				if (string) {
 					text = name.type === 'date' ? moment(string).format('DD/MM/YYYY hh:mm A') : string;
@@ -534,21 +513,20 @@ jQuery(document).ready(function () {
 			} else {
 				className = name;
 				text = jsonData[name] ? jsonData[name] : '-';
-				if (name == 'poStatus') { text = getPoStatusName(poStatusList, jsonData[name]) }
-				if(name =='poReceivedByUser') {
-					text = jsonData['user'] && Object.keys(jsonData['user']).length && jsonData['user']['receivedBy'] && jsonData['user']['receivedBy']['name'] ? jsonData['user']['receivedBy']['name']  : '-';
+				if (name == 'poStatus') { text = getPoStatusName(poStatusList, jsonData[name]); }
+				if (name == 'poReceivedByUser') {
+					text = jsonData['user'] && Object.keys(jsonData['user']).length && jsonData['user']['receivedBy'] && jsonData['user']['receivedBy']['name'] ? jsonData['user']['receivedBy']['name'] : '-';
 				}
-				if(name =='poReceivedByDate') {
+				if (name == 'poReceivedByDate') {
 					text = jsonData['user'] && Object.keys(jsonData['user']).length && jsonData['user']['receivedBy'] && jsonData['user']['receivedBy']['date'] ? moment(jsonData['user']['receivedBy']['date']).format('DD/MM/YYYY hh:mm A') : '-';
 				}
-			}	
+			}
 			poHeader.find('.' + className).text(text);
-		})
+		});
 	}
 
 	$('#poInfoTable').on('click', '.delete', function (e) {
 		e.preventDefault();
-
 		if (!confirm('Are you sure to delete this Purchase Order?')) {
 			return;
 		}
@@ -613,7 +591,7 @@ jQuery(document).ready(function () {
 		}).done(function (response) {
 			if (response.success === true) {
 				setTimeout(function () {
-					window.open(path + response.url); //- Opens in new tab without warning.
+					window.open(path + response.url);
 				}, 800);
 			} else {
 				alert('Error printing PO. Please contact helpdesk.');
@@ -649,15 +627,14 @@ jQuery(document).ready(function () {
 									continue;
 								}
 								const unitCost = Number(Number(poDetail.orderedCost) / parseInt(poDetail.orderedQty)).toFixed(2);
-								const unitCostGst = Number(Number(poDetail.orderedCostGst) / parseInt(poDetail.orderedQty)).toFixed(2);
+								const unitCostGst = Number(Number(poDetail.orderedGST || poDetail.orderedCostGst || 0) / parseInt(poDetail.orderedQty)).toFixed(2);
 								let totalCost = parseInt(poDetail.orderedQty) * unitCost;
 								let totalGst = parseInt(poDetail.orderedQty) * unitCostGst;
-								tds = '<tr>'
+								tds = '<tr>';
 								tds += getTableCellLabel(poDetail.Part.name);
 								tds += getTableCellLabel(poDetail.orderedQty);
 								tds += getTableCellLabel(unitCost);
 								tds += getTableCellLabel(unitCostGst);
-								// tds += getTableCellLabel(poDetail.Part.serialNumbered);
 								tds += getTableCellLabel(getVehicleBrandModelName(poDetail.VehicleModel));
 								tds += getTableCellInput('location', 'select');
 								if (poDetail.Part.serialNumbered) {
@@ -676,12 +653,12 @@ jQuery(document).ready(function () {
 								tds += getTableCellInput('note');
 								tds += getTableCellInput('receiptImages', 'file');
 								tds += '<td style="display:none"><input type="hidden" class="id" value="' + poDetail.id + '"></td>';
-								tds += '<td style="display:none"><input type="hidden" class="vehicleModel" value="' + poDetail.VehicleModelId ? poDetail.VehicleModelId : "" + '"></td>';
+								tds += '<td style="display:none"><input type="hidden" class="vehicleModel" value="' + (poDetail.VehicleModelId ? poDetail.VehicleModelId : "") + '"></td>';
 								tds += '<td style="display:none"><input type="hidden" class="unitCost" value="' + unitCost + '"></td>';
 								tds += '<td style="display:none"><input type="hidden" class="unitGst" value="' + unitCostGst + '"></td>';
 								tds += '</tr>';
 								$('#poDetailsReceiveTable tbody').append(tds);
-							};
+							}
 							fetchLocations(poHeader);
 							$('#poReceiveForm #totalReceivedCost').text(inputElementsSum('#poReceiveForm .totalCost'));
 							$('#poReceiveForm #totalReceivedQty').text(inputElementsSum('#poReceiveForm .receivedQty'));
@@ -717,14 +694,16 @@ jQuery(document).ready(function () {
 			});
 		});
 	});
+
 	$('#poDetailsReceiveTable').on('blur', '.receivedQty', function (e) {
 		let unitCost = $(this).closest('tr').find('td input.unitCost').val();
+		
 		let unitGst = $(this).closest('tr').find('td input.unitGst').val();
-		let totalCost = parseInt($(this).val()) * unitCost;
-		let totalGst = parseInt($(this).val()) * unitGst;
-		$(this).closest('tr').find('td input.totalCost').val(totalCost);
-		$(this).closest('tr').find('td input.totalGst').val(totalGst);
-
+		let receivedQty = parseInt($(this).val()) || 0;
+		let totalCost = receivedQty * unitCost;
+		let totalGst = receivedQty * unitGst;
+		$(this).closest('tr').find('td input.totalCost').val(Number(totalCost).toFixed(2));
+		$(this).closest('tr').find('td input.totalGst').val(Number(totalGst).toFixed(2));
 		$('#poReceiveForm #totalReceivedCost').text(inputElementsSum('#poReceiveForm .totalCost'));
 		$('#poReceiveForm #totalReceivedQty').text(inputElementsSum('#poReceiveForm .receivedQty'));
 		$('#poReceiveForm #totalReceivedCostGst').text(inputElementsSum('#poReceiveForm .totalGst'));
@@ -777,7 +756,7 @@ jQuery(document).ready(function () {
 					return alert('Location, Qty, Cost and GRN are required!');
 				}
 				const grn = Number(grnStr);
-				if (!Number.isInteger(grn) || grn < 0 || grn > Number.MAX_SAFE_INTEGER) {					
+				if (!Number.isInteger(grn) || grn < 0 || grn > Number.MAX_SAFE_INTEGER) {
 					return alert('Invalid GRN Number!');
 				}
 			}
@@ -815,7 +794,8 @@ jQuery(document).ready(function () {
 		} else {
 			$('#poApproveForm .form-group.note').addClass('hide');
 		}
-	})
+	});
+
 	$("#verifyStatus").on("change", function (e) {
 		const status = $('#verifyStatus').val();
 		if (status == '12') {
@@ -823,12 +803,11 @@ jQuery(document).ready(function () {
 		} else {
 			$('#poVerifyForm .form-group.note').addClass('hide');
 		}
-	})
+	});
 
 	$("#poEntryForm").on("change", ".branch-select2", function (e) {
 		const selectedBranchId = $(this).val();
 		initOnBranchSelect(selectedBranchId);
-		//#region populate billTo & shipTo
 		$('.billTo, .shipTo').val(``);
 		if ($(this).val()) {
 			var branchName = $(this).select2("data")[0].text ? $(this).select2("data")[0].text : '';
@@ -836,7 +815,7 @@ jQuery(document).ready(function () {
 			$('.billTo, .shipTo').val(`${branchName} \n${branchAddress}`);
 		}
 		//#endregion
-	})
+	});
 
 	function initOnBranchSelect(selectedBranchId) {
 		let assignedParts = [];
@@ -850,7 +829,6 @@ jQuery(document).ready(function () {
 			data: assignedPartsSelect,
 			allowClear: true,
 		});
-		// $('.part-select2').val(null).trigger('change');			
 		$('#poDetailsEntryTable').find('td .part-select2').val(null).trigger('change.select2');
 	}
 
@@ -872,7 +850,6 @@ jQuery(document).ready(function () {
 		row.find(".part-select2").val(null).trigger("change");
 	});
 
-
 	$("#poDetailsEntryTable").on("change", ".part-select2", function (e) {
 		if (!$(".branch-select2").val()) {
 			$(this).val(null).trigger('change.select2');
@@ -881,7 +858,7 @@ jQuery(document).ready(function () {
 		const selectedPartId = $(this).val();
 		let assignedVehicleModels = [];
 		if (selectedPartId) {
-			assignedVehicleModels = getVehicleModelsAssignedToPart(selectedPartId, partsObjArray)
+			assignedVehicleModels = getVehicleModelsAssignedToPart(selectedPartId, partsObjArray);
 		}
 		const assignedVehiclesSelect = assignedVehicleModels.length > 0 ? getDataForSelectInput(assignedVehicleModels, true) : vehicleModels;
 		const vehicleModelSelectInput = $(this).closest('tr').find('td .vehicleModel-select2');
@@ -899,7 +876,7 @@ jQuery(document).ready(function () {
 		}
 		clearContainerTableRowInputs(this);
 		computeTotalOrderCost();
-	})
+	});
 
 	$("#poDetailsEntryTable").on("change", ".vehicleModel-select2", function (e) {
 		if (!$(".branch-select2").val()) {
@@ -907,7 +884,7 @@ jQuery(document).ready(function () {
 			return alert('Please select branch');
 		}
 		const row = $(this).closest('tr');
-		const partId = row.find('td select.part-select2').val()
+		const partId = row.find('td select.part-select2').val();
 		if (!partId) {
 			$(this).val(null).trigger('change.select2');
 			return alert('Please select part');
@@ -915,21 +892,26 @@ jQuery(document).ready(function () {
 		fetchStockDetatils(this);
 	});
 
+	
 	function fetchStockDetatils(ele) {
 		$(ele).closest('tr').find('td label.text-label').html('');
 		$(ele).closest('tr').find('td input.unitCost').val('');
-		$(ele).closest('tr').find('td input.unitCostGst').val('');
-		$(ele).closest('tr').find('td input.unitTotalCost').val('');
+		$(ele).closest('tr').find('td input.taxlessTotal').val('');
+		$(ele).closest('tr').find('td input.SGSTCost').val('');
+		$(ele).closest('tr').find('td input.CGSTCost').val('');
+		$(ele).closest('tr').find('td input.GST').val('');
+		$(ele).closest('tr').find('td input.DiscountCost').val('');
+		$(ele).closest('tr').find('td input.NetTotal').val('');
 		var branchId = $(".branch-select2").val();
 		var partId = $(ele).closest('tr').find('td select.part-select2').val();
-		var vehicleModelId = $(ele).closest('tr').find('td select.vehicleModel-select2').val() ? $(ele).closest('tr').find('td select.vehicleModel-select2').val() : '';
+		var vehicleModelId = $(ele).closest('tr').find('td select.vehicleModel-select2').val() || '';
 		if (!partId || !branchId) {
 			$(ele).closest('tr').find('td select.part-select2').val(null).trigger('change.select2');
 			return alert('Please select branch & part');
 		}
 		$.ajax({
 			type: 'GET',
-			url: path + '/api/inventories/stocks/part?BranchId=' + branchId + '&PartId=' + partId + '&VehicleModelId=' + vehicleModelId + '',
+			url: path + '/api/inventories/stocks/part?BranchId=' + branchId + '&PartId=' + partId + '&VehicleModelId=' + vehicleModelId,
 			headers: { 'X-AT-SessionToken': localStorage.sessionToken }
 		}).done(function (response) {
 			if (response.success === true) {
@@ -940,18 +922,16 @@ jQuery(document).ready(function () {
 				var maxQty = 0;
 				var availQty = 0;
 				if (partDetail) {
-					minOrderQty = partDetail.minOrderQty ? partDetail.minOrderQty : 0;
-					minQty = partDetail.minQty ? partDetail.minQty : 0;
-					maxQty = partDetail.maxQty ? partDetail.maxQty : 0;
-					$(ele).closest('tr').find('td input.unitCost').val(partDetail.cost ? partDetail.cost : '');
-					$(ele).closest('tr').find('td input.unitCostGst').val(partDetail.gst ? partDetail.gst : '');
-					let gst = partDetail.gst != null ? partDetail.gst : 0;
-					let cost = partDetail.cost != null ? partDetail.cost : 0;
-					let gstPercentage = (cost !== 0) ? (gst / cost) * 100 : 0;
-					$(ele).closest('tr').find('td input.GSTPercentage').val(gstPercentage);
+					minOrderQty = partDetail.minOrderQty || 0;
+					minQty = partDetail.minQty || 0;
+					maxQty = partDetail.maxQty || 0;
+					$(ele).closest('tr').find('.unitCost').val(partDetail.cost || '');
+					$(ele).closest('tr').find('.SGSTPercentage').val(partDetail.sgst || 0);
+					$(ele).closest('tr').find('.CGSTPercentage').val(partDetail.cgst || 0);
+					computeTotalOrderCost();
 				}
 				if (invStock) {
-					availQty = invStock.quantityOnHand ? invStock.quantityOnHand : 0;
+					availQty = invStock.quantityOnHand || 0;
 				}
 				$(ele).closest('tr').find('td label.text-label').html(`Min Order Qty : ${minOrderQty} </br> Min/Max Qty : ${minQty} / ${maxQty} </br> Avail Qty : ${availQty}`);
 			} else {
@@ -966,15 +946,9 @@ jQuery(document).ready(function () {
 			let selection = $('#apprStatus').val();
 			let endpoint = '';
 			switch (selection) {
-				case '3':
-					endpoint = 'approve/';
-					break;
-				case '12':
-					endpoint = 'reject/';
-					break;
-				default:
-					alert('Invalid selection!');
-					break;
+				case '3': endpoint = 'approve/'; break;
+				case '12': endpoint = 'reject/'; break;
+				default: alert('Invalid selection!'); break;
 			}
 			$.ajax({
 				type: $(form).attr('method'),
@@ -1000,15 +974,9 @@ jQuery(document).ready(function () {
 			let selection = $('#verifyStatus').val();
 			let endpoint = '';
 			switch (selection) {
-				case '2':
-					endpoint = 'verify/';
-					break;
-				case '12':
-					endpoint = 'reject/';
-					break;
-				default:
-					alert('Invalid selection!');
-					break;
+				case '2': endpoint = 'verify/'; break;
+				case '12': endpoint = 'reject/'; break;
+				default: alert('Invalid selection!'); break;
 			}
 			$.ajax({
 				type: $(form).attr('method'),
@@ -1049,19 +1017,10 @@ jQuery(document).ready(function () {
 		}
 	});
 
-	$("#sdate").datetimepicker({
-		format: "DD/MM/YYYY",
-		sideBySide: true
-	});
-
-	$("#edate").datetimepicker({
-		format: "DD/MM/YYYY",
-		sideBySide: true
-	});
-
+	$("#sdate").datetimepicker({ format: "DD/MM/YYYY", sideBySide: true });
+	$("#edate").datetimepicker({ format: "DD/MM/YYYY", sideBySide: true });
 	$("#sdate").data("DateTimePicker").defaultDate(moment(moment().subtract(1, 'month')));
 	$("#edate").data("DateTimePicker").defaultDate(moment());
-
 
 	$("#loadFilter").on("click", function (e) {
 		e.preventDefault();
@@ -1087,7 +1046,7 @@ jQuery(document).ready(function () {
 					headers: { 'X-AT-SessionToken': localStorage.sessionToken },
 					type: 'GET',
 					url: url,
-					dataSrc: function(response) {
+					dataSrc: function (response) {
 						return response.results || [];
 					}
 				},
@@ -1098,16 +1057,11 @@ jQuery(document).ready(function () {
 					{ extend: 'pdfHtml5', orientation: 'landscape', title: "Purchase Orders", pageSize: 'A4' }
 				],
 				lengthMenu: [[20, 40, 60, -1], [20, 40, 60, 'All']],
-				fixedColumns: {
-					leftColumns: 1,
-					rightColumns: 1
-				},
+				fixedColumns: { leftColumns: 1, rightColumns: 1 },
 				scrollX: true,
 				scrollY: true,
 				columns: [
-					{
-						data: 'poNumber',
-					},
+					{ data: 'poNumber' },
 					{
 						data: 'JobCard',
 						class: 'align-right',
@@ -1124,7 +1078,7 @@ jQuery(document).ready(function () {
 								data.forEach(poDetail => {
 									if (poDetail.PoReceipts) {
 										poDetail.PoReceipts.forEach(receipt => {
-											grnSet.add(receipt.grn)
+											grnSet.add(receipt.grn);
 										});
 									}
 								});
@@ -1136,9 +1090,7 @@ jQuery(document).ready(function () {
 						data: 'orderDate',
 						class: 'align-center',
 						render: function (data, type, full, meta) {
-							if (!data) {
-								return "";
-							}
+							if (!data) { return ""; }
 							if (type === 'display' || type === 'filter') {
 								return moment(data).format('DD/MM/YYYY hh:mm A');
 							}
@@ -1149,24 +1101,26 @@ jQuery(document).ready(function () {
 						data: 'orderedCost',
 						class: 'align-right',
 						render: function (data, type, full, meta) {
-							return data ? Number(data).toFixed(2) : 0.00;
+							return data ? Number(data).toFixed(2) : '0.00';
 						}
 					},
 					{
-						data: 'orderedCostGst',
+						data: 'NetTotal',
 						class: 'align-right',
 						render: function (data, type, full, meta) {
-							return data ? Number(data).toFixed(2) : 0.00;
+							return data ? Number(data).toFixed(2) : '0.00';
 						}
 					},
 					{
-						data: 'Branch', defaultContent: '',
+						data: 'Branch',
+						defaultContent: '',
 						render: function (data, type, full, meta) {
 							return data && data.name ? data.name : 'N/A';
 						}
 					},
 					{
-						data: 'Vendor', defaultContent: '',
+						data: 'Vendor',
+						defaultContent: '',
 						render: function (data, type, full, meta) {
 							return data && data.name ? data.name : 'N/A';
 						}
@@ -1183,14 +1137,12 @@ jQuery(document).ready(function () {
 						name: "createdAt",
 						class: 'align-center',
 						render: function (data, type, full, meta) {
-							if (!data) {
-								return "";
-							}
+							if (!data) { return ""; }
 							const createdAt = moment(data);
 							if (!(type == "display" || type == "filter")) {
 								return createdAt.unix();
 							}
-							return (full.PoHeaderCreatedBy ? (full.PoHeaderCreatedBy.username ? full.PoHeaderCreatedBy.username : '') : '') + ' </br>' + moment(data).format('DD/MM/YYYY hh:mm A');
+							return (full.PoHeaderCreatedBy ? (full.PoHeaderCreatedBy.username || '') : '') + ' </br>' + moment(data).format('DD/MM/YYYY hh:mm A');
 						}
 					},
 					{
@@ -1198,14 +1150,12 @@ jQuery(document).ready(function () {
 						class: 'align-center',
 						defaultContent: '',
 						render: function (data, type, full, meta) {
-							if (!data) {
-								return "";
-							}
+							if (!data) { return ""; }
 							const verifiedAt = moment(data);
 							if (!(type == "display" || type == "filter")) {
 								return verifiedAt.unix();
 							}
-							return (full.PoHeaderVerifiedBy ? (full.PoHeaderVerifiedBy.username ? full.PoHeaderVerifiedBy.username : '') : '') + ' </br>' + moment(data).format('DD/MM/YYYY hh:mm A');
+							return (full.PoHeaderVerifiedBy ? (full.PoHeaderVerifiedBy.username || '') : '') + ' </br>' + moment(data).format('DD/MM/YYYY hh:mm A');
 						}
 					},
 					{
@@ -1213,18 +1163,16 @@ jQuery(document).ready(function () {
 						class: 'align-center',
 						defaultContent: '',
 						render: function (data, type, full, meta) {
-							if (!data) {
-								return "";
-							}
+							if (!data) { return ""; }
 							const approvedAt = moment(data);
 							if (!(type == "display" || type == "filter")) {
 								return approvedAt.unix();
 							}
-							return (full.PoHeaderApprovedBy ? (full.PoHeaderApprovedBy.username ? full.PoHeaderApprovedBy.username : '') : '') + ' </br>' + moment(data).format('DD/MM/YYYY hh:mm A');
+							return (full.PoHeaderApprovedBy ? (full.PoHeaderApprovedBy.username || '') : '') + ' </br>' + moment(data).format('DD/MM/YYYY hh:mm A');
 						}
 					},
 					{
-						data: 'userDetails', // cancelled by
+						data: 'userDetails',
 						defaultContent: '',
 						class: 'align-center',
 						render: function (data, type, full, meta) {
@@ -1238,7 +1186,8 @@ jQuery(document).ready(function () {
 						}
 					},
 					{
-						data: 'note', defaultContent: '',
+						data: 'note',
+						defaultContent: '',
 						render: function (data, type, full, meta) {
 							return data;
 						}
@@ -1253,60 +1202,34 @@ jQuery(document).ready(function () {
 								allButtons.push(getEditButton(data));
 							}
 							if (data) {
-								if (data.addressInfo) {
-									delete data.addressInfo;
-								}
-								if (data.Vendor) {
-									delete data.Vendor;
-								}
-								if (data.Branch) {
-									delete data.Branch;
-								}
+								if (data.addressInfo) { delete data.addressInfo; }
+								if (data.Vendor) { delete data.Vendor; }
+								if (data.Branch) { delete data.Branch; }
 							}
 							allButtons.push(`<a data-id="${data.id}" data-json=${JSON.stringify(data)} class="view-details btn btn-default btn-xs" style="margin-right: 3px;margin-bottom: 3px;">View Details</a>`);
 							if (full.poStatus == 1 || full.poStatus == 12) {
-								// PO is draft, so show verify button
 								allButtons.push(getVerifyButton(data));
 							}
 							if (full.poStatus == 2) {
-								// PO is verified, so show approve button
 								allButtons.push(getApproveButton(data));
 							}
 							if (full.poStatus == 3) {
-								// PO is approved, so show cancel button
 								allButtons.push(getCancelButton(data));
 							}
 							if (full.poStatus == 3 || full.poStatus == 6) {
-								// PO is approved/ordered , so show received button
 								if (getComponentAccess('Receive')) {
 									allButtons.push(`<a data-id="${data.id}" data-json=${JSON.stringify(data)} class="receive btn btn-default btn-xs" style="margin-right: 3px;margin-bottom: 3px;">Receive</a>`);
 								}
 								allButtons.push(`<a data-id="${data.id}" data-json=${JSON.stringify(data)} class="print-po btn btn-default btn-xs" style="margin-right: 3px;margin-bottom: 3px;">Print PO</a>`);
-							} else if (full.poStatus >= 3 && full.poStatus != 4 && ['2144', '10152'].includes(localStorage.AccountId)) { // Print option for any status after approval for accounts SAANCO & SLPL
+							} else if (full.poStatus >= 3 && full.poStatus != 4 && ['2144', '10152'].includes(localStorage.AccountId)) {
 								allButtons.push(`<a data-id="${data.id}" data-json=${JSON.stringify(data)} class="print-po btn btn-default btn-xs" style="margin-right: 3px;margin-bottom: 3px;">Print PO</a>`);
 							}
-
 							if (full.poStatus >= 6) {
-								// PO received / Partially Received
-								allButtons.push(
-									`<a data-id="${data.id}" class="create-invoice btn btn-default btn-xs" style="margin-right: 3px;margin-bottom: 3px;">Create Invoice</a>`
-								);
+								allButtons.push(`<a data-id="${data.id}" class="create-invoice btn btn-default btn-xs" style="margin-right: 3px;margin-bottom: 3px;">Create Invoice</a>`);
 							}
-
-							if (full.PoInvoiceHeaders?.length) {
-								// Invoice Created 
-								allButtons.push(
-									`<a 
-									data-id="${data.id}" 
-									class="view-invoices btn btn-default btn-xs" style="margin-right: 3px;margin-bottom: 3px;"
-									href="po-invoices?PoHeaderId=${full.id}"
-									target="__blank"
-									>
-									View Invoices
-									</a>`
-								);
+							if (full.PoInvoiceHeaders && full.PoInvoiceHeaders.length) {
+								allButtons.push(`<a data-id="${data.id}" class="view-invoices btn btn-default btn-xs" style="margin-right: 3px;margin-bottom: 3px;" href="po-invoices?PoHeaderId=${full.id}" target="__blank">View Invoices</a>`);
 							}
-
 							allButtons.push(generateDataImageButton(data.images));
 							allButtons.push(getDeleteButton(data));
 
@@ -1326,9 +1249,7 @@ jQuery(document).ready(function () {
 				initComplete: function () {
 					let instance = this.api();
 					let orderByColIdx = instance.column('createdAt:name').index();
-					instance.order([
-						[orderByColIdx, 'desc']
-					]).draw();
+					instance.order([[orderByColIdx, 'desc']]).draw();
 				}
 			});
 		} else {
@@ -1336,13 +1257,10 @@ jQuery(document).ready(function () {
 		}
 	}
 
-
 	$('#poInfoTable_wrapper .dataTables_length select').addClass('form-control xsmall');
 
 	$('#poEntryForm').validate({
 		submitHandler: function (form) {
-
-			//#region validation for poDetail
 			let poDetailsValidationMsg = "";
 			$("#poDetailsEntryTable tbody tr").each(function (idx) {
 				const row = $(this);
@@ -1356,24 +1274,30 @@ jQuery(document).ready(function () {
 			if (poDetailsValidationMsg) {
 				return alert(poDetailsValidationMsg);
 			}
-			//#endregion
 
-			//#region format poDetail data
 			let addFormData = new FormData(form);
 			let poDetails = [];
+
 			$('#poDetailsEntryTable tbody tr').each(function () {
 				let poDetail = {
-					partId: $(this).find('td select.part-select2').val() ? $(this).find('td select.part-select2').val() : '',
-					vehicleModelId: $(this).find('td select.vehicleModel-select2').val() ? $(this).find('td select.vehicleModel-select2').val() : '',
-					orderedQty: $(this).find('td input.orderQty').val() ? $(this).find('td input.orderQty').val() : '',
-					unitCost: $(this).find('td input.unitCost').val() ? $(this).find('td input.unitCost').val() : '',
-					unitCostGst: $(this).find('td input.unitCostGst').val() ? $(this).find('td input.unitCostGst').val() : '',
-					vehicleServiceTypeId: $(this).find("td select.vehicleServiceType-select2").val() || ""
+					partId: $(this).find('td select.part-select2').val() || '',
+					vehicleModelId: $(this).find('td select.vehicleModel-select2').val() || '',
+					vehicleServiceTypeId: $(this).find('td select.vehicleServiceType-select2').val() || '',
+					orderedQty: $(this).find('td input.orderQty').val() || '',
+					unitCost: $(this).find('td input.unitCost').val() || '',
+					taxlessTotal: $(this).find('td input.taxlessTotal').val() || '',
+					SGSTPercentage: $(this).find('td input.SGSTPercentage').val() || '',
+					SGSTCost: $(this).find('td input.SGSTCost').val() || '',
+					CGSTPercentage: $(this).find('td input.CGSTPercentage').val() || '',
+					CGSTCost: $(this).find('td input.CGSTCost').val() || '',
+					GST: $(this).find('td input.GST').val() || '',
+					DiscountPercentage: $(this).find('td input.DiscountPercentage').val() || '',
+					DiscountCost: $(this).find('td input.DiscountCost').val() || '',
+					NetTotal: $(this).find('td input.NetTotal').val() || '',
 				};
 				poDetails.push(poDetail);
 			});
 			addFormData.append("poDetails", JSON.stringify(poDetails));
-			//#endregion
 
 			$('#savePoEntryBtn').prop('disabled', true);
 			var method = "POST";
@@ -1416,58 +1340,69 @@ $('#poReceiveForm').on('change keyup blur', ".totalGst", function () {
 	$('#poReceiveForm #totalReceivedCostGst').text(inputElementsSum('#poReceiveForm .totalGst'));
 });
 
-$('#poEntryForm').on('change keyup blur', ".orderQty", computeTotalOrderCost);
-
-$('#poEntryForm').on('change keyup blur', ".unitCost", computeTotalOrderCost);
-
-$('#poEntryForm').on('change keyup blur', ".unitCostGst", computeTotalOrderCost);
-
-$('#poEntryForm').on('change keyup blur', ".unitCostGst", computeGSTPercentage);
-
-$('#poEntryForm').on('change keyup blur', ".unitCost", computeGSTPercentage);
-
-$('#poEntryForm').on('change keyup blur', ".GSTPercentage", computeUnitCostGst);
-
-$('#poEntryForm').on('change keyup blur', ".GSTPercentage", computeTotalOrderCost);
+$('#poEntryForm').on('change keyup blur', '.orderQty, .unitCost, .SGSTPercentage, .CGSTPercentage, .DiscountPercentage', computeTotalOrderCost);
 
 function computeTotalOrderCost() {
-	$('#poEntryForm #orderedQty').text(qtyTotal('#poEntryForm', '.orderQty').toFixed(2));
-	$('#poEntryForm .orderedQty').val(qtyTotal('#poEntryForm', '.orderQty'));
-	$('#poEntryForm #orderedCost').text(qtyCostTotal('#poEntryForm', '.orderQty', '.unitCost').toFixed(2));
-	$('#poEntryForm .orderedCost').val(qtyCostTotal('#poEntryForm', '.orderQty', '.unitCost'));
-	$('#poEntryForm #orderedCostGst').text(qtyCostTotal('#poEntryForm', '.orderQty', '.unitCostGst').toFixed(2));
-	$('#poEntryForm .orderedCostGst').val(qtyCostTotal('#poEntryForm', '.orderQty', '.unitCostGst'));
-	$('#poEntryForm #grandTotal').text(qtyCostTotal('#poEntryForm', '.orderQty', '.unitCost', '.unitCostGst').toFixed(2));
-}
+	let taxlessTotal = 0;
+	let totalGst = 0;
+	let discountTotal = 0;
+	let netGrandTotal = 0;
 
-function computeGSTPercentage() {
-	let $row = $(this).closest('tr');
-	let gst = parseFloat($row.find('.unitCostGst').val());
-	let unitCost = parseFloat($row.find('.unitCost').val());
-	let gstPercentage = (gst && unitCost) ? (gst / unitCost) * 100 : 0;
-	$row.find('.GSTPercentage').val(gstPercentage.toFixed(2));
-}
+	$('#poDetailsEntryTable tbody tr').each(function () {
+		let row = $(this);
+		let qty = parseFloat(row.find('.orderQty').val()) || 0;
+		let unitCost = parseFloat(row.find('.unitCost').val()) || 0;
+		let sgstPercent = parseFloat(row.find('.SGSTPercentage').val()) || 0;
+		let cgstPercent = parseFloat(row.find('.CGSTPercentage').val()) || 0;
+		let discountPercent = parseFloat(row.find('.DiscountPercentage').val()) || 0;
 
-function computeUnitCostGst() {
-	let $row = $(this).closest('tr');
-	let gstPercentage = parseFloat($row.find('.GSTPercentage').val());
-	let unitCost = parseFloat($row.find('.unitCost').val());
-	let gst = (gstPercentage && unitCost) ? (gstPercentage / 100) * unitCost : 0;
-	$row.find('.unitCostGst').val(gst.toFixed(2));
+		let taxless = qty * unitCost;
+		let sgstAmount = taxless * sgstPercent / 100;
+		let cgstAmount = taxless * cgstPercent / 100;
+		let gstTotal = sgstAmount + cgstAmount;
+		let discountAmount = taxless * discountPercent / 100;
+		let netTotal = taxless + gstTotal - discountAmount;
+
+		row.find('.taxlessTotal').val(taxless.toFixed(2));
+		row.find('.SGSTCost').val(sgstAmount.toFixed(2));
+		row.find('.CGSTCost').val(cgstAmount.toFixed(2));
+		row.find('.GST').val(gstTotal.toFixed(2));
+		row.find('.DiscountCost').val(discountAmount.toFixed(2));
+		row.find('.NetTotal').val(netTotal.toFixed(2));
+
+		taxlessTotal += taxless;
+		totalGst += gstTotal;
+		discountTotal += discountAmount;
+		netGrandTotal += netTotal;
+	});
+
+	$('#poEntryForm #orderedTaxless').text(taxlessTotal.toFixed(2));
+	$('#poEntryForm .orderedTaxless').val(taxlessTotal.toFixed(2));
+	$('#poEntryForm #orderedGST').text(totalGst.toFixed(2));
+	$('#poEntryForm .orderedGST').val(totalGst.toFixed(2));
+	$('#poEntryForm #orderedDiscount').text(discountTotal.toFixed(2));
+	$('#poEntryForm .orderedDiscount').val(discountTotal.toFixed(2));
+	$('#poEntryForm #grandTotal').text(netGrandTotal.toFixed(2));
+	$('#poEntryForm .grandTotal').val(netGrandTotal.toFixed(2));
 }
 
 function getAddPoDetailTableRowHtml(noDynamicDelete) {
 	let tds = '';
-	// tds = '<td class="part"><select id="part" style="width:170px;" class="part-select2 form-control"><option value="">Select part</option></select></td>';
 	tds = getTableCellInput('part', 'select');
 	tds += getTableCellInput("vehicleServiceType", "select");
 	tds += getTableCellInput('vehicleModel', 'select');
 	tds += getTableCellLabel('', 12);
 	tds += getTableCellInput('orderQty', 'number', true);
 	tds += getTableCellInput('unitCost', 'number', true);
-	tds += getTableCellInput('unitCostGst', 'number');
-	tds += getTableCellInput('GSTPercentage', 'number', true);
-	tds += getTableCellInput('unitTotalCost', 'number', 'readonly');
+	tds += getTableCellInput('taxlessTotal', 'number', 'readonly');
+	tds += getTableCellInput('SGSTPercentage', 'number');
+	tds += getTableCellInput('SGSTCost', 'number', 'readonly');
+	tds += getTableCellInput('CGSTPercentage', 'number');
+	tds += getTableCellInput('CGSTCost', 'number', 'readonly');
+	tds += getTableCellInput('GST', 'number', 'readonly');
+	tds += getTableCellInput('DiscountPercentage', 'number');
+	tds += getTableCellInput('DiscountCost', 'number', 'readonly');
+	tds += getTableCellInput('NetTotal', 'number', 'readonly');
 	if (!noDynamicDelete) {
 		tds += '<td class="align-center"><a class="dynamicDelete"><img src="images/dashboard/close-icon.svg" width="25"/></a></td>';
 	} else {
@@ -1490,7 +1425,7 @@ function poStatusForClass(id) {
 		{ "id": 10, "class": "success" },
 		{ "id": 11, "class": "success" },
 		{ "id": 12, "class": "danger" }
-	]
+	];
 	const classMatch = statusClass.find(x => x.id == id);
 	return classMatch && classMatch.class ? 'label-' + classMatch.class : '';
 }
