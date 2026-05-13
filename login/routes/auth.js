@@ -128,9 +128,12 @@ router.post('/forgot-password',async(req,res)=>{
             text:`your OTP is ${otp}`
         });
 
+        
         res.render('verify-otp',{
-            email
+            email,
+            success: 'OTP sent to your email successfully'
         });
+
     }catch(err){
         res.redirect('/?error='+encodeURIComponent(err.message));
     }

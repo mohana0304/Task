@@ -1,6 +1,5 @@
 //Authorization middleware (access control) - what the user is allowed to access like admin/user
 
-
 const jwt=require('jsonwebtoken');
 exports.auth= (roles = [])=>{
     return (req,res,next)=>{

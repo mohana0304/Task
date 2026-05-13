@@ -55,6 +55,11 @@ html
 
 
   body
+
+    if success
+      script.
+        alert("#{success}")
+
     form(action="/verify-otp" method="POST")
       h2 Verify OTP
 

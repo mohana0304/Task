@@ -1,3 +1,4 @@
+//tls -Transport layer security (encrypt data, protect passwords, secure communication over the internet)
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
