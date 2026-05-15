@@ -1,0 +1,535 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Avolve Tyre Dashboard
+    link(
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    )
+    link(
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    )
+    script(src="https://code.jquery.com/jquery-3.7.1.min.js")
+    script(src="https://cdn.jsdelivr.net/npm/flot@4.2.6/dist/es5/jquery.flot.js")
+    script(src="https://cdn.jsdelivr.net/npm/flot@4.2.6/source/jquery.flot.pie.js")
+    script(src="https://cdn.jsdelivr.net/npm/flot@4.2.6/source/jquery.flot.categories.js")
+    script(src="https://cdn.jsdelivr.net/npm/flot@4.2.6/source/jquery.flot.resize.js")
+
+    style.
+      *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+      }
+      body{
+        background:#f8f5ff;
+        font-family:'Inter',sans-serif;
+        padding:2rem;
+        color:#1e1a2f;
+      }
+      .dashboard{
+        max-width:1600px;
+        margin:auto;
+      }
+      .header{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-bottom:2rem;
+        flex-wrap:wrap;
+        gap:1rem;
+      }
+      .logo-area h1{
+        font-size:2rem;
+        font-weight:700;
+        background:linear-gradient(135deg,#7c3aed,#a78bfa);
+        -webkit-background-clip:text;
+        color:transparent;
+      }
+      .logo-area p{
+        color:#6b7280;
+        margin-top:6px;
+      }
+      .date-badge{
+        background:white;
+        border-radius:40px;
+        padding:0.7rem 1.4rem;
+        border:1px solid #ede9fe;
+        box-shadow:0 4px 10px rgba(0,0,0,0.04);
+        color:#6d28d9;
+        font-weight:600;
+      }
+      .grid{
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(420px,1fr));
+        gap:1.5rem;
+        margin-bottom:2rem;
+      }
+      .card{
+        background:white;
+        border-radius:24px;
+        overflow:hidden;
+        border:1px solid #ede9fe;
+        box-shadow:0 10px 30px rgba(124,58,237,0.05);
+        transition:0.3s;
+      }
+      .card:hover{
+        transform:translateY(-3px);
+      }
+      .card-header{
+        padding:1.2rem 1.5rem;
+        border-bottom:1px solid #f3efff;
+        display:flex;
+        align-items:center;
+        gap:1rem;
+      }
+      .card-header i{
+        background:#f3e8ff;
+        color:#7c3aed;
+        padding:12px;
+        border-radius:14px;
+        font-size:1.2rem;
+      }
+      .card-header h2{
+        font-size:1.2rem;
+        color:#2e1065;
+      }
+      .card-content{
+        padding:1.5rem;
+      }
+      .kpi-row{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        padding:0.8rem 0;
+        border-bottom:1px dashed #ede9fe;
+      }
+      .kpi-label{
+        color:#6b7280;
+        font-size:0.92rem;
+        font-weight:500;
+      }
+      .kpi-value{
+        font-size:1.5rem;
+        font-weight:700;
+        color:#4c1d95;
+      }
+      .unit{
+        font-size:0.8rem;
+        color:#9ca3af;
+      }
+      .chart{
+        width:100%;
+        height:280px;
+      }
+      .chart-lg{
+        width:100%;
+        height:340px;
+      }
+      .badge{
+        padding:0.35rem 0.8rem;
+        border-radius:30px;
+        font-size:0.75rem;
+        font-weight:600;
+      }
+      .badge-green{
+        background:#dcfce7;
+        color:#166534;
+      }
+      .badge-red{
+        background:#fee2e2;
+        color:#991b1b;
+      }
+      .inspect-table{
+        width:100%;
+        border-collapse:collapse;
+        margin-top:1rem;
+      }
+      .inspect-table th{
+        text-align:left;
+        padding:0.8rem;
+        background:#f3e8ff;
+        color:#5b21b6;
+        font-size:0.8rem;
+      }
+      .inspect-table td{
+        padding:0.8rem;
+        border-bottom:1px solid #f3f4f6;
+      }
+      .clickable{
+        background:#f3e8ff;
+        color:#6d28d9;
+        padding:0.3rem 0.8rem;
+        border-radius:30px;
+        cursor:pointer;
+        display:inline-block;
+        font-weight:600;
+      }
+      .pieLabel div{
+        background: transparent !important;
+        color: #6d28d9 !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+      .wear-list{
+        margin-top:1rem;
+      }
+      .wear-item{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        padding:1rem;
+        background:#faf5ff;
+        border-radius:16px;
+        margin-bottom:0.8rem;
+      }
+      .download-btn{
+        margin-top:1rem;
+        border:none;
+        background:#7c3aed;
+        color:white;
+        padding:0.9rem 1.2rem;
+        border-radius:12px;
+        cursor:pointer;
+        font-weight:600;
+      }
+      .download-btn:hover{
+        background:#6d28d9;
+      }
+      #tooltip{
+        position:absolute;
+        display:none;
+        padding:8px;
+        background:#4c1d95;
+        color:white;
+        border-radius:8px;
+        font-size:12px;
+        z-index:9999;
+      }
+      @media(max-width:768px){
+        body{
+          padding:1rem;
+        }
+        .grid{
+          grid-template-columns:1fr;
+        }
+      }
+
+  body
+
+    #tooltip
+    .dashboard
+      .header
+        .logo-area
+          h1
+            i(class="fas fa-chart-line")
+            |  Avolve Dashboard
+          p Customer Performance & Tyre Intelligence
+        .date-badge
+          i(class="far fa-calendar")
+          |  April 2026 • Q2 Snapshot
+
+      .grid
+        .card
+          .card-header
+            i(class="fas fa-shopping-cart")
+            h2 Tyre Purchase
+
+          .card-content
+            .kpi-row
+              .kpi-label Tyre Purchase vs Commitment
+              .kpi-value
+                | 2480
+                span.unit  Units
+            br
+            span.badge.badge-green
+              | ▲ 108% Above Commitment
+            br
+            br
+            span.badge.badge-red
+              | ▼ Below 85% Alert
+            br
+            br
+            #purchaseChart.chart
+
+
+        .card
+          .card-header
+            i(class="fas fa-chart-simple")
+            h2 Tyre Health & Performance
+          .card-content
+            .kpi-row
+              .kpi-label Active Tyres
+              .kpi-value 3421
+            .kpi-row
+              .kpi-label Tyres Under 4mm
+              .kpi-value 312
+            .kpi-row
+              .kpi-label Avg Running Days
+              .kpi-value 187
+            .kpi-row
+              .kpi-label Durability Factor
+              .kpi-value 92%
+            .kpi-row
+              .kpi-label Retreadability
+              .kpi-value 68%
+            br
+            #mileageChart.chart
+
+
+
+      .grid
+        .card
+          .card-header
+            i(class="fas fa-truck")
+            h2 Vehicles
+          .card-content
+            .kpi-row
+              .kpi-label Vehicle Enrolled
+              .kpi-value 184
+            .kpi-row
+              .kpi-label Vehicle + Tyres Mapped
+              .kpi-value 179
+            table.inspect-table
+              tr
+                th Period
+                th Count
+              tr
+                td Last 7 Days
+                td
+                  span.clickable 24
+              tr
+                td Last 15 Days
+                td
+                  span.clickable 58
+              tr
+                td Last 1 Month
+                td
+                  span.clickable 112
+              tr
+                td Last 3 Months
+                td
+                  span.clickable 201
+              tr
+                td Last 6 Months
+                td
+                  span.clickable 268
+                
+
+        .card
+          .card-header
+            i(class="fas fa-clipboard-list")
+            h2 Inspection Overview
+          .card-content
+            #inspectionChart.chart-lg
+
+
+
+      .grid
+        .card
+          .card-header
+            i(class="fas fa-chart-pie")
+            h2 Wear Pattern Analytics
+          .card-content
+            #wearChart.chart-lg
+
+
+        .card
+          .card-header
+            i(class="fas fa-tools")
+            h2 Top Wear Action
+          .card-content
+            .wear-list
+              .wear-item
+                span Shoulder Wear (32 tyres)
+                span.clickable Action
+              .wear-item
+                span Center Wear (28 tyres)
+                span.clickable Action
+              .wear-item
+                span Edge Wear (22 tyres)
+                span.clickable Action
+              .wear-item
+                span Diagonal Wear (17 tyres)
+                span.clickable Action
+              .wear-item
+                span Cupping (11 tyres)
+                span.clickable Action
+
+            button.download-btn
+              i(class="fas fa-download")
+              |  Download Excel
+
+
+    script.
+
+      $(function(){
+        const purchaseData = [
+          ["Jan",780],
+          ["Feb",845],
+          ["Mar",855],
+          ["Apr",902],
+          ["May",980]
+        ];
+        $.plot("#purchaseChart",[
+          {
+            data:purchaseData,
+            color:"#8b5cf6",
+            bars:{
+              show:true,
+              barWidth:0.5,
+              align:"center",
+              fillColor:"#c4b5fd"
+            }
+          }
+        ],{
+          xaxis:{
+            mode:"categories",
+            tickLength:0
+          },
+          grid:{
+            borderColor:"#ede9fe",
+            hoverable:true,
+            clickable:true
+          }
+        });
+
+        $.plot("#mileageChart",[
+          {
+            label:"Mileage",
+            data:[
+              [0,25],
+              [1,42],
+              [2,33]
+            ],
+            color:"#7c3aed",
+            bars:{
+              show:true,
+              barWidth:0.5,
+              fillColor:"#a78bfa"
+            }
+          }
+        ],{
+          xaxis:{
+            ticks:[
+              [0,"0-20k"],
+              [1,"20-40k"],
+              [2,"40k+"]
+            ]
+          },
+          grid:{
+            borderColor:"#ede9fe",
+            hoverable:true
+          }
+        });
+
+        $.plot("#inspectionChart",[
+          {
+            label:"Inspection",
+            data:[
+              ["Jan",76],
+              ["Feb",142],
+              ["Mar",198],
+              ["Apr",263]
+            ],
+            color:"#9333ea",
+            lines:{
+              show:true,
+              fill:true
+            },
+            points:{
+              show:true
+            }
+          }
+        ],{
+          xaxis:{
+            mode:"categories"
+          },
+          grid:{
+            borderColor:"#ede9fe",
+            hoverable:true
+          }
+        });
+
+
+        $.plot("#wearChart",[
+          {
+            label:"Shoulder",
+            data:32,
+            color:"#8a50ed"
+          },
+          {
+            label:"Center",
+            data:28,
+            color:"#8b5cf6"
+          },
+          {
+            label:"Edge",
+            data:22,
+            color:"#a78bfa"
+          },
+          {
+            label:"Diagonal",
+            data:17,
+            color:"#c4b5fd"
+          },
+          {
+            label:"Cupping",
+            data:11,
+            color:"#ddd6fe"
+          }
+        ],{
+          series:{
+            pie:{
+              show:true,
+              radius:1,
+              stroke:{
+                color:"#ffffff",
+                width:2
+              },
+              label:{
+                show:true,
+                radius:0.8,
+                formatter:function(label,series){
+                  return `
+                    <div style="
+                      font-size:13px;
+                      text-align:center;
+                      color:#7c3aed;
+                      padding:4px;
+                      font-weight:600;
+                    ">
+                      ${label}<br/>
+                      ${Math.round(series.percent)}%
+                    </div>
+                  `;
+                }
+              }
+            }
+          },
+          legend:{
+            show:false
+          }
+        });
+
+
+        $(".chart,.chart-lg").bind("plothover",function(event,pos,item){
+          if(item){
+            $("#tooltip")
+            .html(item.datapoint[1])
+            .css({
+              top:item.pageY + 10,
+              left:item.pageX + 10
+            })
+            .fadeIn(200);
+          }
+          else{
+            $("#tooltip").hide();
+          }
+        });
+      });

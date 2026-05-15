@@ -1,0 +1,51 @@
+doctype html
+html
+  head
+    title ECharts Aurora Dashboard
+    script(src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js")
+    style.
+      body{background:#07111f;color:white;font-family:Arial;padding:20px}
+      h1{text-align:center;color:#06b6d4}
+      .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(450px,1fr));gap:20px}
+      .card{background:#0f172a;padding:20px;border-radius:15px}
+      .chart{height:350px}
+  body
+    h1 ECharts Dashboard
+    .grid
+      .card
+        h2 Bar
+        #bar.chart
+      .card
+        h2 Line
+        #line.chart
+      .card
+        h2 Pie
+        #pie.chart
+
+    script.
+      const bar=echarts.init(document.getElementById('bar'));
+      bar.setOption({
+        xAxis:{data:['A','B','C','D'],axisLabel:{color:'#fff'}},
+        yAxis:{axisLabel:{color:'#fff'}},
+        series:[{type:'bar',data:[5,20,36,10],itemStyle:{color:'#06b6d4'}}]
+      });
+
+      const line=echarts.init(document.getElementById('line'));
+      line.setOption({
+        xAxis:{type:'category',data:['Mon','Tue','Wed'],axisLabel:{color:'#fff'}},
+        yAxis:{type:'value',axisLabel:{color:'#fff'}},
+        series:[{type:'line',smooth:true,data:[30,50,40],lineStyle:{color:'#22c55e'}}]
+      });
+
+      const pie=echarts.init(document.getElementById('pie'));
+      pie.setOption({
+        series:[{
+          type:'pie',
+          radius:'70%',
+          data:[
+            {value:40,name:'Food'},
+            {value:30,name:'Travel'},
+            {value:20,name:'Bills'}
+          ]
+        }]
+      });

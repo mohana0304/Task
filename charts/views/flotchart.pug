@@ -1,0 +1,356 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Flot Charts
+    script(src="https://code.jquery.com/jquery-3.7.1.min.js")
+    script(src="https://cdn.jsdelivr.net/npm/flot@4.2.6/dist/es5/jquery.flot.js")
+    script(src="https://cdn.jsdelivr.net/npm/flot@4.2.6/source/jquery.flot.pie.js")
+    script(src="https://cdn.jsdelivr.net/npm/flot@4.2.6/source/jquery.flot.categories.js")
+    script(src="https://cdn.jsdelivr.net/npm/flot@4.2.6/source/jquery.flot.resize.js")
+    script(src="https://cdn.jsdelivr.net/npm/flot@4.2.6/source/jquery.flot.time.js")
+    style.
+      *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+      }
+      body{
+        background:#f5f3ff;
+        font-family:Arial;
+        padding:30px;
+      }
+      h1{
+        text-align:center;
+        color:#5b21b6;
+        margin-bottom:40px;
+      }
+      .grid{
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(500px,1fr));
+        gap:25px;
+      }
+      #tooltip{
+        position:absolute;
+        display:none;
+        background:purple;
+        color:white;
+        padding:6px 10px;
+        border-radius:6px;
+        font-size:12px;
+        pointer-events:none;
+        z-index:999;
+      }
+      .card{
+        background:white;
+        padding:20px;
+        border-radius:20px;
+        box-shadow:0 10px 20px rgba(0,0,0,0.05);
+      }
+      .chart{
+        width:100%;
+        height:350px;
+      }
+      h2{
+        margin-bottom:20px;
+        color:#4c1d95;
+      }
+  body
+    h1 FLOT CHARTS
+    .grid
+      .card
+        h2 Line Chart
+        #lineChart.chart
+      .card
+        h2 Bar Chart
+        #barChart.chart
+      .card
+        h2 Area Chart
+        #areaChart.chart
+      .card
+        h2 Multi Line Chart
+        #multiChart.chart
+      .card
+        h2 Stacked Bar
+        #stackChart.chart
+      .card
+        h2 Pie Chart
+        #pieChart.chart
+      .card
+        h2 Donut Chart
+        #donutChart.chart
+      .card
+        h2 Realtime Chart
+        #realChart.chart
+      .card
+        h2 Scatter Plot
+        #scatterChart.chart
+      .card
+        h2 Time Series
+        #timeChart.chart
+    #tooltip 
+
+    script.
+      fetch('/data/data.json')
+        .then(res=>res.json())
+        .then(data=>{
+
+          $.plot("#lineChart",[
+            {
+              label:"Sales Trend",
+              data:data.salesTrend,
+              color:"#7c3aed",
+              lines:{
+                show:true,
+                lineWidth:4
+              },
+              points:{
+                show:true,
+                radius:5
+              }
+            }
+          ],{
+            grid:{
+              hoverable:true,
+              borderColor:"#ddd6fe"
+            }
+          });
+
+          $.plot("#barChart",[
+            {
+              data:data.monthlyRevenue,
+              color:"#8b5cf6",
+              bars:{
+                show:true,
+                align:"center",
+                barWidth:0.5,
+                fillColor:"#c4b5fd"
+              }
+            }
+          ],{
+            xaxis:{
+              mode:"categories"
+            },
+            grid:{
+              hoverable:true,
+              borderColor:"#d1caf0"
+            }
+          });
+
+          $.plot("#areaChart",[
+            {
+              data:data.websiteTraffic,
+              color:"#9333ea",
+              lines:{
+                show:true,
+                fill:true,
+                fillColor:"rgba(146, 51, 234, 0.44)"
+              }
+            }
+          ],{
+            grid:{
+              hoverable:true,
+              borderColor:"#ddd6fe"
+            }
+          });
+
+          $.plot("#multiChart",[
+            {
+              label:"2025",
+              data:data.companyGrowth["2025"],
+              color:"#7c3aed",
+              lines:{
+                show:true ,
+                linewidth:3
+              }
+            },
+            {
+              label:"2026",
+              data:data.companyGrowth["2026"],
+              color:"#ec4899",
+              lines:{
+                show:true,
+                linewidth:3
+              }
+            },
+            {
+              label:"2027",
+              data:data.companyGrowth["2027"],
+              color:"#5b206d",
+              lines:{
+                show:true,
+                linewidth:3
+              }
+            }
+          ],{             
+              grid: {
+                borderColor: "#e5e7eb",
+                hoverable: true
+              }
+          });
+
+          $.plot("#stackChart",[
+            {
+              label:"Development",
+              data:data.departmentPerformance.Development,
+              color:"#7c3aed"
+            },
+            {
+              label:"marketing",
+              data:data.departmentPerformance.Marketing,
+              color:"#c084fc"
+            },
+            {
+              label:"Sales",
+              data:data.departmentPerformance.Sales,
+              color:"#7d6e8c"
+            }
+          ],{
+            series:{
+              stack:true,
+              bars:{
+                show:true,
+                barWidth:0.5
+              }
+            },
+            grid:{
+              hoverable:true,
+              borderColor:"#ddd6fe"
+            }
+          });
+
+
+          $.plot("#pieChart", data.marketShare,{
+            series:{
+              pie:{
+                show:true,
+                radius:1,
+                hoverable:true,
+                stroke:{
+                  color:"#fff",
+                  width:2
+                }
+              }
+            },
+            grid:{
+              hoverable:true
+            }
+          });
+
+
+          $.plot("#donutChart", data.deviceUsage,{
+            series:{
+              pie:{
+                show:true,
+                innerRadius:0.5,
+                radius:1,
+                hoverable:true,
+                stroke:{
+                  color:"#fff"
+                }
+              }
+            },
+            grid:{
+              hoverable:true
+            }
+          });
+
+
+          let realData = [];
+          for(let i=0;i<30;i++){
+            realData.push([i,Math.random()*100]);
+          }
+          const realPlot = $.plot("#realChart",[
+            {
+              data:realData,
+              color:"#22c55e",
+              lines:{
+                show:true,
+                fill:true
+              }
+            }
+          ]);
+
+          setInterval(function(){
+            realData.shift();
+            realData.push([
+              realData.length,
+              Math.random()*100
+            ]);
+            realPlot.setData([realData]);
+            realPlot.draw();
+          },1000);
+
+          $.plot("#scatterChart",[
+            {
+              label: "Employee Salary",
+              data:data.employeeScatter,
+              color:"#f97316",
+              points:{
+                show:true,
+                radius:8
+              }
+            }
+          ],{
+            grid:{
+              hoverable:true
+            }
+          });
+
+
+          $.plot("#timeChart",[
+            {
+              label:"Temperature",
+              data:data.temperatureData,
+              color:"#2563eb",
+              lines:{
+                show:true
+              }
+            }
+          ],{
+            xaxis:{
+              mode:"time",
+              timeformat: "%b %d"
+            },
+            grid:{
+              hoverable:true
+            }
+          });
+
+          let tooltip = $("#tooltip");
+
+          $(".chart").bind("plothover", function (event, pos, item) {
+
+            if (item) {
+              tooltip
+                .html(item.datapoint[1])
+                .css({
+                  top: pos.pageY + 10,
+                  left: pos.pageX + 10,
+                  position: "absolute"
+                })
+                .fadeIn(100);
+            } else {
+              tooltip.hide();
+            }
+
+          });
+          $("#pieChart, #donutChart").bind("plothover", function (event, pos, item) {
+            let tooltip = $("#tooltip");
+
+            if (item) {
+              tooltip.html(
+                item.series.label + ": " + item.series.percent.toFixed(2) + "%"
+              )
+              .css({
+                top: pos.pageY + 10,
+                left: pos.pageX + 10
+              })
+              .fadeIn(100);
+            } else {
+              tooltip.hide();
+            }
+          }); 
+
+        })

@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Avolve | Customer Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        background: #f8f5ff;
+        font-family: 'Inter', sans-serif;
+        padding: 2rem;
+        color: #1e1a2f;
+      }
+      
+      .dashboard {
+        max-width: 1600px;
+        margin: 0 auto;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+      
+      .logo-area h1 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        background: linear-gradient(135deg, #7c3aed, #a78bfa);
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+      }
+      
+      .logo-area p {
+        color: #6b6b7b;
+        font-size: 0.9rem;
+        margin-top: 0.2rem;
+      }
+      
+      .date-badge {
+        background: white;
+        padding: 0.5rem 1.2rem;
+        border-radius: 40px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        border: 1px solid #ede9fe;
+        font-weight: 500;
+        font-size: 0.9rem;
+        color: #4c1d95;
+      }
+      
+      .date-badge i {
+        margin-right: 0.5rem;
+        color: #8b5cf6;
+      }
+      
+      /* Card Grid */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+        gap: 1.6rem;
+        margin-bottom: 2rem;
+      }
+      
+      .card {
+        background: #ffffff;
+        border-radius: 28px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.02), 0 2px 4px rgba(0,0,0,0.02);
+        border: 1px solid #f0eaff;
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 30px -12px rgba(124, 58, 237, 0.08);
+        border-color: #e9d9ff;
+      }
+      
+      .card-header {
+        padding: 1.2rem 1.5rem;
+        border-bottom: 1px solid #f3efff;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      
+      .card-header i {
+        font-size: 1.5rem;
+        color: #8b5cf6;
+        background: #f4f0fe;
+        padding: 8px;
+        border-radius: 14px;
+      }
+      
+      .card-header h2 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #2d2a3e;
+      }
+      
+      .card-content {
+        padding: 1.2rem 1.5rem 1.5rem;
+      }
+      
+      /* KPI Rows */
+      .kpi-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding: 0.7rem 0;
+        border-bottom: 1px dashed #f0ecfe;
+      }
+      
+      .kpi-label {
+        font-weight: 500;
+        color: #554c6e;
+        font-size: 0.9rem;
+      }
+      
+      .kpi-value {
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: #1f1b2e;
+      }
+      
+      .unit {
+        font-size: 0.8rem;
+        font-weight: 400;
+        color: #8b7aa8;
+        margin-left: 4px;
+      }
+      
+      .badge-green {
+        color: #0b5e42;
+        background: #e0f2e9;
+        border-radius: 30px;
+        padding: 0.2rem 0.7rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+      }
+      
+      .badge-red {
+        background: #ffe4e2;
+        color: #b91c1c;
+      }
+      
+      /* Table Styles */
+      .inspect-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+      
+      .inspect-table th {
+        text-align: left;
+        padding: 0.6rem 0.2rem;
+        font-weight: 600;
+        color: #5b4b82;
+        font-size: 0.75rem;
+        border-bottom: 1px solid #ede9fe;
+      }
+      
+      .inspect-table td {
+        padding: 0.5rem 0.2rem;
+        font-weight: 500;
+        color: #2d2a3e;
+        border-bottom: 1px solid #f5f1ff;
+      }
+      
+      .clickable-number {
+        background: #f4f0fe;
+        padding: 0.2rem 0.6rem;
+        border-radius: 30px;
+        display: inline-block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: #6d28d9;
+      }
+      
+      .clickable-number:hover {
+        background: #e2d5ff;
+        transform: scale(1.02);
+      }
+      
+      /* Graph Placeholders */
+      .graph-placeholder {
+        background: #faf8ff;
+        border-radius: 20px;
+        padding: 0.8rem;
+        margin-top: 0.8rem;
+        border: 1px solid #ede9fe;
+      }
+      
+      .bar-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin: 0.5rem 0;
+      }
+      
+      .bar-label {
+        width: 80px;
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+      
+      .bar-bg {
+        flex: 1;
+        height: 10px;
+        background: #e9e2fc;
+        border-radius: 20px;
+        overflow: hidden;
+      }
+      
+      .bar-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 20px;
+      }
+      
+      .green-fill {
+        background: #16a34a;
+      }
+      
+      .red-fill {
+        background: #dc2626;
+      }
+      
+      .purple-fill {
+        background: #8b5cf6;
+      }
+      
+      /* Wear List */
+      .wear-list {
+        margin-top: 0.5rem;
+      }
+      
+      .wear-item {
+        display: flex;
+        justify-content: space-between;
+        background: #f9f6ff;
+        padding: 0.6rem 1rem;
+        border-radius: 20px;
+        margin: 0.5rem 0;
+        align-items: center;
+      }
+      
+      .btn-download {
+        background: white;
+        border: 1px solid #d9c9ff;
+        border-radius: 40px;
+        padding: 0.5rem 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6d28d9;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      
+      .btn-download i {
+        margin-right: 0.4rem;
+      }
+      
+      .btn-download:hover {
+        background: #ede9fe;
+      }
+      
+      hr {
+        margin: 1rem 0;
+        border-color: #f0eaff;
+      }
+      
+      @media (max-width: 780px) {
+        body {
+          padding: 1rem;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      
+    </style>
+  </head>
+  <body>
+    <div class="dashboard">
+      <div class="header">
+        <div class="logo-area">
+          <h1><i class="fas fa-chart-line"></i> Avolve Dashboard</h1>
+          <p>Customer Performance & Tyre Intelligence</p>
+        </div>
+        <div class="date-badge"><i class="far fa-calendar-alt"></i><span>April 2026 • Q2 Snapshot</span></div>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-shopping-cart"></i>
+            <h2>Tyres Purchase</h2>
+          </div>
+          <div class="card-content">
+            <div class="kpi-row"><span class="kpi-label">Tyre Purchase vs Commitment</span>
+              <div class="kpi-value">2,480 <span class="unit">units</span></div>
+            </div>
+            <div class="graph-placeholder">
+              <div class="bar-container">
+                <div class="bar-label">Commitment</div>
+                <div class="bar-bg">
+                  <div class="bar-fill green-fill" style="width: 108%"></div>
+                </div>
+              </div>
+              <div class="bar-container">
+                <div class="bar-label">Actual Purchase</div>
+                <div class="bar-bg">
+                  <div class="bar-fill green-fill" style="width: 104%"></div>
+                </div>
+              </div>
+              <div style="font-size:12px; margin-top: 12px; display: flex; justify-content: space-between"><span><span class="badge-green">▲ 108% Above 100% (Green)</span></span><span><span class="badge-red">▼ below 85% red</span></span></div>
+            </div>
+            <hr>
+            <div class="kpi-label" style="margin-bottom: 8px;">Quarter wise Month on Month Purchase</div>
+            <div class="graph-placeholder">
+              <canvas id="monthlyGraph" style="width:100%; height:80px"></canvas>
+              <div class="bar-container" style="justify-content:space-between;"><span>Jan: 780</span><span>Feb: 845</span><span>Mar: 855</span></div>
+              <div style="font-size:0.7rem; color:#7c6b9e; margin-top: 6px;">* Above 100% green zone, below 85% red alert</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><i class="fas fa-chart-simple"></i>
+            <h2>Tyre Health & Performance</h2>
+          </div>
+          <div class="card-content">
+            <div class="kpi-row"><span class="kpi-label">Active Tyres (running)</span>
+              <div class="kpi-value">3,421 <span class="unit">tyres</span></div>
+            </div>
+            <div class="kpi-row"><span class="kpi-label">Tyre under 4mm</span>
+              <div class="kpi-value">312 <span class="unit">tyres</span></div>
+            </div>
+            <div class="kpi-row"><span class="kpi-label">Avg Tyre Running days</span>
+              <div class="kpi-value">187 <span class="unit">days</span></div>
+            </div>
+            <div class="kpi-row"><span class="kpi-label">Durability Factor</span>
+              <div class="kpi-value">92%</div>
+            </div>
+            <div class="kpi-row"><span class="kpi-label">Retreadability percentage</span>
+              <div class="kpi-value">68%</div>
+            </div>
+            <div class="graph-placeholder">
+              <div class="kpi-label" style="margin-bottom:4px">Avg tyres mileage - New</div>
+              <div class="bar-container">
+                <div class="bar-label">Mileage (km)</div>
+                <div class="bar-bg">
+                  <div class="bar-fill purple-fill" style="width: 76%;"></div>
+                </div>
+              </div><span style="font-size:12px">48,200 km • 12% above fleet avg</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-truck"></i>
+            <h2>Vehicles</h2>
+          </div>
+          <div class="card-content">
+            <div class="kpi-row"><span class="kpi-label">Vehicle enrolled</span>
+              <div class="kpi-value">184 <span class="unit">vehicles</span></div>
+            </div>
+            <div class="kpi-row"><span class="kpi-label">Vehicle + Tyres mapped</span>
+              <div class="kpi-value">179 <span class="unit">mapped</span></div>
+            </div>
+            <div class="kpi-label" style="margin-top: 12px;">Vehicles inspection history</div>
+            <table class="inspect-table">
+              <tr>
+                <th>Period</th>
+                <th>Count (clickable)</th>
+              </tr>
+              <tr>
+                <td>Last 7 days</td>
+                <td><span class="clickable-number" onclick="alert('Show list: 24 vehicles last 7 days')">24</span></td>
+              </tr>
+              <tr>
+                <td>Last 15 days</td>
+                <td><span class="clickable-number" onclick="alert('Show list: 58 vehicles last 15 days')">58</span></td>
+              </tr>
+              <tr>
+                <td>Last 1 Month</td>
+                <td><span class="clickable-number" onclick="alert('Show list: 112 vehicles last 1 month')">112</span></td>
+              </tr>
+              <tr>
+                <td>Last 3 Months</td>
+                <td><span class="clickable-number" onclick="alert('Show list: 201 vehicles last 3 months')">201</span></td>
+              </tr>
+              <tr>
+                <td>Last 6 Months</td>
+                <td><span class="clickable-number" onclick="alert('Show list: 268 vehicles last 6 months')">268</span></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><i class="fas fa-clipboard-list"></i>
+            <h2>Inspection Overview</h2>
+          </div>
+          <div class="card-content">
+            <div class="kpi-label">Vehicle inspected (clickable periods)</div>
+            <table class="inspect-table">
+              <tr>
+                <th>Last 30d</th>
+                <th>Last 60d</th>
+                <th>Last 90d</th>
+                <th>Last 120d</th>
+              </tr>
+              <tr>
+                <td><span class="clickable-number" onclick="alert('Vehicles inspected: 76 vehicles')">76</span></td>
+                <td><span class="clickable-number" onclick="alert('Vehicles inspected: 142 vehicles')">142</span></td>
+                <td><span class="clickable-number" onclick="alert('Vehicles inspected: 198 vehicles')">198</span></td>
+                <td><span class="clickable-number" onclick="alert('Vehicles inspected: 263 vehicles')">263</span></td>
+              </tr>
+            </table>
+            <div class="kpi-label" style="margin-top: 1rem">Tyres inspected</div>
+            <table class="inspect-table">
+              <tr>
+                <th>30d</th>
+                <th>60d</th>
+                <th>90d</th>
+                <th>120d</th>
+              </tr>
+              <tr>
+                <td><span class="clickable-number" onclick="alert('Tyres inspected: 1242 tyres')">1242</span></td>
+                <td><span class="clickable-number" onclick="alert('Tyres inspected: 2560 tyres')">2560</span></td>
+                <td><span class="clickable-number" onclick="alert('Tyres inspected: 3891 tyres')">3891</span></td>
+                <td><span class="clickable-number" onclick="alert('Tyres inspected: 4956 tyres')">4956</span></td>
+              </tr>
+            </table>
+            <div class="kpi-label" style="margin-top: 1rem">Vehicle not inspected (count)</div>
+            <table class="inspect-table">
+              <tr>
+                <th>30d</th>
+                <th>60d</th>
+                <th>90d</th>
+                <th>120d</th>
+              </tr>
+              <tr>
+                <td><span class="clickable-number" onclick="alert('Vehicles not inspected: 12 vehicles')">12</span></td>
+                <td><span class="clickable-number" onclick="alert('Vehicles not inspected: 24 vehicles')">24</span></td>
+                <td><span class="clickable-number" onclick="alert('Vehicles not inspected: 33 vehicles')">33</span></td>
+                <td><span class="clickable-number" onclick="alert('Vehicles not inspected: 41 vehicles')">41</span></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-chart-line"></i>
+            <h2>Monthly IP Variation</h2>
+          </div>
+          <div class="card-content">
+            <div class="graph-placeholder">
+              <canvas id="ipVariation" style="width:100%; height:140px"></canvas>
+              <div class="bar-container" style="justify-content:space-between; margin-top: 10px"><span>Jan: +4.2%</span><span>Feb: +3.8%</span><span>Mar: +5.1%</span><span>Apr: +4.5%</span></div>
+              <div class="badge-green" style="display:inline-block; margin-top:8px">↗ Positive trend vs previous month</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><i class="fas fa-chart-pie"></i>
+            <h2>Top 5 Wear Pattern with Call to Action</h2>
+          </div>
+          <div class="card-content">
+            <div class="wear-list">
+              <div class="wear-item"><span><strong>Shoulder Wear</strong> (32 tyres)</span><span class="clickable-number" onclick="alert('Action: Check alignment &amp; rotation')">🔧 Call to Action</span></div>
+              <div class="wear-item"><span><strong>Center Wear</strong> (28 tyres)</span><span class="clickable-number" onclick="alert('Action: Overinflation correction recommended')">🔧 Call to Action</span></div>
+              <div class="wear-item"><span><strong>Edge Wear</strong> (22 tyres)</span><span class="clickable-number" onclick="alert('Action: Inspect suspension &amp; pressure')">🔧 Call to Action</span></div>
+              <div class="wear-item"><span><strong>Diagonal Wear</strong> (17 tyres)</span><span class="clickable-number" onclick="alert('Action: Wheel balancing needed')">🔧 Call to Action</span></div>
+              <div class="wear-item"><span><strong>Cupping</strong> (11 tyres)</span><span class="clickable-number" onclick="alert('Action: Shock absorber inspection')">🔧 Call to Action</span></div>
+            </div>
+            <hr>
+            <div class="kpi-label">Call to action recommendations on tyres & vehicle</div>
+            <button class="btn-download" onclick="alert('Download Excel report with details for top 5 wear patterns')"><i class="fas fa-download"></i> Download Excel (Full Details)</button>
+          </div>
+        </div>
+      </div>
+      <div class="grid" style="margin-top:0.5rem">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-chart-scatter"></i>
+            <h2>Advanced Analytics & Fleet Actions</h2>
+          </div>
+          <div class="card-content">
+            <div class="kpi-row"><span class="kpi-label">Tyre mileage distribution</span><span>(new tyres avg 49k km)</span></div>
+            <div class="graph-placeholder">
+              <div class="bar-container">
+                <div class="bar-label">0-20k km</div>
+                <div class="bar-bg">
+                  <div class="bar-fill" style="width:25%; background:#c4b5fd"></div>
+                </div>
+              </div>
+              <div class="bar-container">
+                <div class="bar-label">20-40k</div>
+                <div class="bar-bg">
+                  <div class="bar-fill" style="width:42%; background:#a78bfa"></div>
+                </div>
+              </div>
+              <div class="bar-container">
+                <div class="bar-label">40k+</div>
+                <div class="bar-bg">
+                  <div class="bar-fill" style="width:33%; background:#7c3aed"></div>
+                </div>
+              </div>
+            </div>
+            <div class="kpi-label" style="margin-top:12px">Quick Actions: </div><span class="badge-green" style="margin-right:8px; cursor:pointer;" onclick="alert('Schedule tyre rotation for under 4mm tyres')">Schedule Inspection</span><span class="badge-green" onclick="alert('View durability factor analysis')">Durability Factor Report</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script>
+    // Simple canvas graphs for illustration
+    function drawSimpleBar(ctx, data, width, height) {
+      if (!ctx) return;
+      const canvas = ctx.canvas;
+      canvas.width = width;
+      canvas.height = height;
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      const max = Math.max(...data);
+      const barWidth = (w / data.length) * 0.6;
+      const startX = (w / data.length - barWidth) / 2;
+      for (let i = 0; i < data.length; i++) {
+        let barHeight = (data[i] / max) * (h - 20);
+        let x = i * (w / data.length) + startX;
+        let y = h - barHeight - 5;
+        ctx.fillStyle = "#8b5cf6";
+        ctx.fillRect(x, y, barWidth, barHeight);
+        ctx.fillStyle = "#4c1d95";
+        ctx.font = "9px Inter";
+        ctx.fillText(data[i], x + 2, y - 2);
+      }
+    }
+    
+    window.onload = function() {
+      const monthlyCanvas = document.getElementById('monthlyGraph');
+      if (monthlyCanvas) {
+        const ctx = monthlyCanvas.getContext('2d');
+        drawSimpleBar(ctx, [780, 845, 855, 902], 280, 90);
+      }
+      const ipCanvas = document.getElementById('ipVariation');
+      if (ipCanvas) {
+        const ipCtx = ipCanvas.getContext('2d');
+        const ipData = [4.2, 3.8, 5.1, 4.5];
+        ipCanvas.width = 300;
+        ipCanvas.height = 100;
+        const w = ipCanvas.width, h = ipCanvas.height;
+        ipCtx.clearRect(0, 0, w, h);
+        const max = 6;
+        const barW = (w / ipData.length) * 0.6;
+        for (let i = 0; i < ipData.length; i++) {
+          let bh = (ipData[i] / max) * (h - 20);
+          let x = i * (w / ipData.length) + 8;
+          let y = h - bh - 5;
+          ipCtx.fillStyle = "#a78bfa";
+          ipCtx.fillRect(x, y, barW, bh);
+          ipCtx.fillStyle = "#5b21b6";
+          ipCtx.fillText(ipData[i] + "%", x + 2, y - 2);
+        }
+      }
+    };
+  </script>
+</html>

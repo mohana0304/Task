@@ -1,0 +1,116 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Chart Dashboard
+
+    link(
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    )
+
+    style.
+      *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+      }
+
+      body{
+        font-family:'Inter',sans-serif;
+        background:#f8fafc;
+        color:#111827;
+      }
+
+      .container{
+        max-width:1100px;
+        margin:auto;
+        padding:60px 20px;
+      }
+
+      .header{
+        text-align:center;
+        margin-bottom:50px;
+      }
+
+      .header h1{
+        font-size:2.5rem;
+        font-weight:700;
+        margin-bottom:10px;
+      }
+
+      .header p{
+        color:#6b7280;
+        font-size:1rem;
+      }
+
+      .grid{
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+        gap:20px;
+      }
+
+      .card{
+        background:white;
+        border:1px solid #e5e7eb;
+        border-radius:12px;
+        padding:30px 25px;
+        text-decoration:none;
+        color:#111827;
+        transition:0.3s ease;
+      }
+
+      .card:hover{
+        transform:translateY(-4px);
+        box-shadow:0 8px 20px rgba(0,0,0,0.06);
+        border-color:#d1d5db;
+      }
+
+      .card h2{
+        font-size:1.2rem;
+        margin-bottom:12px;
+        font-weight:600;
+      }
+
+      .card p{
+        font-size:0.95rem;
+        color:#6b7280;
+        line-height:1.6;
+      }
+
+      @media(max-width:768px){
+        .header h1{
+          font-size:2rem;
+        }
+      }
+
+  body
+
+    .container
+
+      .header
+        h1 Chart Dashboard
+        p Select a chart library to explore dashboards and visualizations
+
+      .grid
+
+        a.card(href="/chart")
+          h2 Chart.js
+          p Responsive and simple chart visualizations.
+
+        a.card(href="/d3")
+          h2 D3.js
+          p Custom SVG and advanced data visualizations.
+
+        a.card(href="/echart")
+          h2 ECharts
+          p Interactive enterprise dashboard charts.
+
+        a.card(href="/apex")
+          h2 ApexCharts
+          p Modern and realtime charting library.
+
+        a.card(href="/flot")
+          h2 FlotCharts
+          p Lightweight plotting and graph library.

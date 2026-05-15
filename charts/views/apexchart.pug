@@ -1,0 +1,48 @@
+doctype html
+html
+  head
+    title ApexCharts Glass Dashboard
+    script(src="https://cdn.jsdelivr.net/npm/apexcharts")
+    style.
+      body{background:linear-gradient(to right,#111827,#1e3a8a);color:white;font-family:Arial;padding:20px}
+      h1{text-align:center;color:#93c5fd}
+      .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(450px,1fr));gap:20px}
+      .card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:20px;border-radius:16px}
+      .chart{height:350px}
+  body
+    h1 ApexCharts Dashboard
+    .grid
+      .card
+        h2 Area Chart
+        #area.chart
+      .card
+        h2 Bar Chart
+        #bar.chart
+      .card
+        h2 Donut Chart
+        #donut.chart
+
+    script.
+      new ApexCharts(document.querySelector('#area'),{
+        chart:{type:'area',height:350},
+        theme:{mode:'dark'},
+        series:[{name:'Revenue',data:[30,40,35,50,49]}],
+        xaxis:{categories:['Jan','Feb','Mar','Apr','May']},
+        colors:['#60a5fa']
+      }).render();
+
+      new ApexCharts(document.querySelector('#bar'),{
+        chart:{type:'bar',height:350},
+        theme:{mode:'dark'},
+        series:[{name:'Sales',data:[12,19,7,15]}],
+        xaxis:{categories:['A','B','C','D']},
+        colors:['#22c55e']
+      }).render();
+
+      new ApexCharts(document.querySelector('#donut'),{
+        chart:{type:'donut',height:350},
+        theme:{mode:'dark'},
+        series:[44,55,13,43],
+        labels:['Apple','Samsung','Xiaomi','Oppo'],
+        colors:['#60a5fa','#22c55e','#f97316','#e879f9']
+      }).render();
