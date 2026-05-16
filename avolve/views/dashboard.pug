@@ -367,169 +367,97 @@ html(lang="en")
 
 
     script.
+    script.
+      $(function () {
 
-      $(function(){
-        const purchaseData = [
-          ["Jan",780],
-          ["Feb",845],
-          ["Mar",855],
-          ["Apr",902],
-          ["May",980]
-        ];
-        $.plot("#purchaseChart",[
-          {
-            data:purchaseData,
-            color:"#8b5cf6",
-            bars:{
-              show:true,
-              barWidth:0.5,
-              align:"center",
-              fillColor:"#c4b5fd"
+        $.getJSON("/data/chart.json", function (data) {
+
+          $.plot("#purchaseChart", [{
+            data: data.purchaseChart,
+            color: "#8b5cf6",
+            bars: {
+              show: true,
+              barWidth: 0.5,
+              align: "center",
+              fillColor: "#c4b5fd"
             }
-          }
-        ],{
-          xaxis:{
-            mode:"categories",
-            tickLength:0
-          },
-          grid:{
-            borderColor:"#ede9fe",
-            hoverable:true,
-            clickable:true
-          }
-        });
+          }], {
+            xaxis: { mode: "categories", tickLength: 0 },
+            grid: { borderColor: "#ede9fe", hoverable: true, clickable: true }
+          });
 
-        $.plot("#mileageChart",[
-          {
-            label:"Mileage",
-            data:[
-              [0,25],
-              [1,42],
-              [2,33]
-            ],
-            color:"#7c3aed",
-            bars:{
-              show:true,
-              barWidth:0.5,
-              fillColor:"#a78bfa"
+
+          $.plot("#mileageChart", [{
+            data: data.mileageChart,
+            color: "#7c3aed",
+            bars: {
+              show: true,
+              barWidth: 0.5,
+              fillColor: "#a78bfa"
             }
-          }
-        ],{
-          xaxis:{
-            ticks:[
-              [0,"0-20k"],
-              [1,"20-40k"],
-              [2,"40k+"]
-            ]
-          },
-          grid:{
-            borderColor:"#ede9fe",
-            hoverable:true
-          }
-        });
-
-        $.plot("#inspectionChart",[
-          {
-            label:"Inspection",
-            data:[
-              ["Jan",76],
-              ["Feb",142],
-              ["Mar",198],
-              ["Apr",263]
-            ],
-            color:"#9333ea",
-            lines:{
-              show:true,
-              fill:true
-            },
-            points:{
-              show:true
-            }
-          }
-        ],{
-          xaxis:{
-            mode:"categories"
-          },
-          grid:{
-            borderColor:"#ede9fe",
-            hoverable:true
-          }
-        });
+          }]);
 
 
-        $.plot("#wearChart",[
-          {
-            label:"Shoulder",
-            data:32,
-            color:"#8a50ed"
-          },
-          {
-            label:"Center",
-            data:28,
-            color:"#8b5cf6"
-          },
-          {
-            label:"Edge",
-            data:22,
-            color:"#a78bfa"
-          },
-          {
-            label:"Diagonal",
-            data:17,
-            color:"#c4b5fd"
-          },
-          {
-            label:"Cupping",
-            data:11,
-            color:"#ddd6fe"
-          }
-        ],{
-          series:{
-            pie:{
-              show:true,
-              radius:1,
-              stroke:{
-                color:"#ffffff",
-                width:2
+          $.plot("#inspectionChart", [{
+            data: data.inspectionChart,
+            color: "#9333ea",
+            lines: { show: true, fill: true },
+            points: { show: true }
+          }], {
+            xaxis: { mode: "categories" },
+            grid: { borderColor: "#ede9fe", hoverable: true }
+          });
+
+          const wearData = data.wearPatternChart.map((i, index) => [
+            i.value,
+            index
+          ]);
+
+          const wearTicks = data.wearPatternChart.map((i, index) => [
+            index,
+            i.label
+          ]);
+
+          $.plot("#wearChart", [
+            {
+              data: wearData,
+              bars: {
+                show: true,
+                horizontal: true,
+                barWidth: 0.6,
+                align: "center",
+                fillColor: "#a78bfa"
               },
-              label:{
-                show:true,
-                radius:0.8,
-                formatter:function(label,series){
-                  return `
-                    <div style="
-                      font-size:13px;
-                      text-align:center;
-                      color:#7c3aed;
-                      padding:4px;
-                      font-weight:600;
-                    ">
-                      ${label}<br/>
-                      ${Math.round(series.percent)}%
-                    </div>
-                  `;
-                }
-              }
+              color: "#7c3aed"
             }
-          },
-          legend:{
-            show:false
-          }
-        });
+          ], {
+            yaxis: {
+              ticks: wearTicks
+            },
+            xaxis: {
+              min: 0
+            },
+            grid: {
+              borderColor: "#ede9fe",
+              hoverable: true
+            }
+          });
 
 
-        $(".chart,.chart-lg").bind("plothover",function(event,pos,item){
-          if(item){
-            $("#tooltip")
-            .html(item.datapoint[1])
-            .css({
-              top:item.pageY + 10,
-              left:item.pageX + 10
-            })
-            .fadeIn(200);
-          }
-          else{
-            $("#tooltip").hide();
-          }
+          $(".chart,.chart-lg").bind("plothover", function (event, pos, item) {
+            if (item) {
+              $("#tooltip")
+                .html(item.datapoint[1])
+                .css({
+                  top: item.pageY + 10,
+                  left: item.pageX + 10
+                })
+                .fadeIn(200);
+            } else {
+              $("#tooltip").hide();
+            }
+          });
+
         });
+
       });
